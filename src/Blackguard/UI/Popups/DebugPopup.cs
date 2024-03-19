@@ -2,11 +2,10 @@ using System;
 using System.Collections;
 using System.Linq;
 using Blackguard.Utilities;
-using Mindmagma.Curses;
 
-namespace Blackguard.UI.Menus;
+namespace Blackguard.UI.Popups;
 
-public class DebugMenu : Menu {
+public class DebugPopup : Popup {
     private const int WIDTH = 40;
 
     private static string FormatIEnumerable(string start, bool cond, IEnumerable objects) {
@@ -35,12 +34,12 @@ public class DebugMenu : Menu {
         (Highlight.Text, (state) => FormatIEnumerable("Keynames: ", state.Input.HasInputThisTick(), state.Input.Keynames())),
     ];
 
-    public DebugMenu() : base("Debug", Highlight.Text, 2, 2, WIDTH, segments.Length + 2) { }
+    public DebugPopup() : base("Debug", Highlight.Text, 2, 2, WIDTH, segments.Length + 2) { }
 
     public override bool RunTick(Game state) => true;
 
     public override void Render(Game state) {
-        RenderBorder(Highlight.Text);
+        Panel.DrawBorder(Highlight.Text);
 
         (Highlight h, int x, int y, string)[] processedSegments = segments.Select((s, i) => (s.h, 1, i + 1, s.f(state))).ToArray();
 

@@ -1,29 +1,36 @@
 using System;
 using System.Linq;
 using Blackguard.Utilities;
-using Mindmagma.Curses;
 
 namespace Blackguard.UI.Elements;
 
 public class UIButton : UIElement, ISelectable {
     private string[] _label;
-    private readonly Action _onPress;
+    private readonly Action<Game> _callback;
+
+    public Highlight Norm = Highlight.Text;
+    public Highlight Sel = Highlight.TextSel;
+    public Highlight SelLastLine = Highlight.TextSelUnderline;
+
+    private (Highlight, int, int, string)[] _segments;
 
     public bool Selected { get; set; }
 
-    public UIButton(string[] label, Action onPress) {
+    public UIButton(string[] label, Action<Game> callback) {
         _label = label;
-        _onPress = onPress;
+        _callback = callback;
+        _segments = new (Highlight, int, int, string)[_label.Length];
     }
 
     public void ChangeLabel(string[] label) {
         _label = label;
+        _segments = new (Highlight, int, int, string)[_label.Length];
     }
 
     public override void ProcessInput(Game state) {
         // Enter, \n, \r, respectively
-        if (state.Input.KeyPressed(CursesKey.ENTER) || state.Input.KeyPressed(10) || state.Input.KeyPressed(13)) {
-            _onPress();
+        if (state.Input.IsEnterPressed()) {
+            _callback(state);
         }
     }
 
@@ -32,14 +39,19 @@ public class UIButton : UIElement, ISelectable {
     }
 
     public override void Render(Drawable drawable, int x, int y, int maxy, int maxh) {
-        drawable.AddLinesWithHighlight(_label.Select((line, i) => (i == _label.Length - 1 && Selected ? Highlight.TextSel : Highlight.Text, x, y + i, _label[i])).ToArray());
-    }
+        for (int i = 0; i < _label.Length; i++) {
+            Highlight highlight;
 
-    public void Select() {
-        Selected = true;
-    }
+            if (!Selected)
+                highlight = Norm;
+            else if (Selected && i < _label.Length - 1)
+                highlight = Sel;
+            else
+                highlight = SelLastLine;
 
-    public void Deselect() {
-        Selected = false;
+            _segments[i] = (highlight, x, y + i, _label[i]);
+        }
+
+        drawable.AddLinesWithHighlight(_segments);
     }
 }
