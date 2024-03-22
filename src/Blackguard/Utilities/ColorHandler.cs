@@ -50,7 +50,7 @@ public enum Color : short {
     LightPink,
 
     DarkRed,
-    DarkRorange,
+    DarkRedOrange,
     DarkOrange,
     DarkYellow,
     DarkYuck,
@@ -68,6 +68,51 @@ public enum ColorPair {
     TextSel,
     Warning,
     Error,
+    Bold,
+    Dim,
+    Hidden,
+    White,
+    LightGray,
+    DarkGray,
+    Black,
+    EmphasisRed,
+    EmphasisGreen,
+    EmphasisBlue,
+    RedOrange,
+    Orange,
+    Yellow,
+    Yuck,
+    Green,
+    Teal,
+    Blue,
+    DeepBlue,
+    Purple,
+    Magenta,
+    Pink,
+    LightRed,
+    LightRedOrange,
+    LightOrange,
+    LightYellow,
+    LightYuck,
+    LightGreen,
+    LightTeal,
+    LightBlue,
+    LightDeepBlue,
+    LightPurple,
+    LightMagenta,
+    LightPink,
+    DarkRed,
+    DarkRedOrange,
+    DarkOrange,
+    DarkYellow,
+    DarkYuck,
+    DarkGreen,
+    DarkTeal,
+    DarkBlue,
+    DarkDeepBlue,
+    DarkPurple,
+    DarkMagenta,
+    DarkPink,
 }
 
 public enum Highlight {
@@ -76,6 +121,51 @@ public enum Highlight {
     TextSelUnderline,
     TextWarning,
     TextError,
+    TextBold,
+    TextDim,
+    TextHidden,
+    TextWhite,
+    TextLightGray,
+    TextDarkGray,
+    TextBlack,
+    TextEmphasisRed,
+    TextEmphasisGreen,
+    TextEmphasisBlue,
+    TextRedOrange,
+    TextOrange,
+    TextYellow,
+    TextYuck,
+    TextGreen,
+    TextTeal,
+    TextBlue,
+    TextDeepBlue,
+    TextPurple,
+    TextMagenta,
+    TextPink,
+    TextLightRed,
+    TextLightRedOrange,
+    TextLightOrange,
+    TextLightYellow,
+    TextLightYuck,
+    TextLightGreen,
+    TextLightTeal,
+    TextLightBlue,
+    TextLightDeepBlue,
+    TextLightPurple,
+    TextLightMagenta,
+    TextLightPink,
+    TextDarkRed,
+    TextDarkRedOrange,
+    TextDarkOrange,
+    TextDarkYellow,
+    TextDarkYuck,
+    TextDarkGreen,
+    TextDarkTeal,
+    TextDarkBlue,
+    TextDarkDeepBlue,
+    TextDarkPurple,
+    TextDarkMagenta,
+    TextDarkPink,
 }
 
 public static class ColorHandler {
@@ -128,7 +218,7 @@ public static class ColorHandler {
         [ 255, 153, 203 ],  // LightPink
 
         [ 153, 31,  31  ],  // DarkRed
-        [ 153, 57,  31  ],  // DarkRorange
+        [ 153, 57,  31  ],  // DarkRedOrange
         [ 153, 76,  31  ],  // DarkOrange
         [ 153, 124, 31  ],  // DarkYellow
         [ 113, 153, 31  ],  // DarkYuck
@@ -142,18 +232,114 @@ public static class ColorHandler {
     ];
 
     public static readonly Color[][] ColorPairDefs = [
-        [ Color.TextFg, Color.TextBg ], // Text
-        [ Color.TextBg, Color.TextFg ], // TextSel
-        [ Color.Yellow, Color.TextBg ], // Error
-        [ Color.Red,    Color.TextBg ]  // Warning
+        [ Color.TextFg,         Color.TextBg ], // Text
+        [ Color.TextBg,         Color.TextFg ], // TextSel
+        [ Color.Yellow,         Color.TextBg ], // Error
+        [ Color.Red,            Color.TextBg ], // Warning
+        [ Color.TextBright,     Color.TextBg ], // Bold
+        [ Color.TextQuieter,    Color.TextBg ], // Dim
+        [ Color.TextQuietest,   Color.TextBg ], // Hidden
+        [ Color.White,          Color.TextBg ], // White
+        [ Color.Gray70,         Color.TextBg ], // LightGray
+        [ Color.Gray30,         Color.TextBg ], // DarkGray
+        [ Color.Black,          Color.TextBg ], // Black
+        [ Color.Red,            Color.TextBg ], // EmphasisRed
+        [ Color.Green,          Color.TextBg ], // EmphasisGreen
+        [ Color.Blue,           Color.TextBg ], // EmphasisBlue
+
+        [ Color.RedOrange,      Color.TextBg ], // RedOrange
+        [ Color.Orange,         Color.TextBg ], // Orange
+        [ Color.Yellow,         Color.TextBg ], // Yellow
+        [ Color.Yuck,           Color.TextBg ], // Yuck
+        [ Color.Green,          Color.TextBg ], // Green
+        [ Color.Teal,           Color.TextBg ], // Teal
+        [ Color.Blue,           Color.TextBg ], // Blue
+        [ Color.DeepBlue,       Color.TextBg ], // DeepBlue
+        [ Color.Purple,         Color.TextBg ], // Purple
+        [ Color.Magenta,        Color.TextBg ], // Magenta
+        [ Color.Pink,           Color.TextBg ], // Pink
+
+        [ Color.LightRed,       Color.TextBg ], // LightRed
+        [ Color.LightRedOrange, Color.TextBg ], // LightRedOrange
+        [ Color.LightOrange,    Color.TextBg ], // LightOrange
+        [ Color.LightYellow,    Color.TextBg ], // LightYellow
+        [ Color.LightYuck,      Color.TextBg ], // LightYuck
+        [ Color.LightGreen,     Color.TextBg ], // LightGreen
+        [ Color.LightTeal,      Color.TextBg ], // LightTeal
+        [ Color.LightBlue,      Color.TextBg ], // LightBlue
+        [ Color.LightDeepBlue,  Color.TextBg ], // LightDeepBlue
+        [ Color.LightPurple,    Color.TextBg ], // LightPurple
+        [ Color.LightMagenta,   Color.TextBg ], // LightMagenta
+        [ Color.LightPink,      Color.TextBg ], // LightPink
+
+        [ Color.DarkRed,        Color.TextBg ], // DarkRed
+        [ Color.DarkRedOrange,  Color.TextBg ], // DarkRedOrange
+        [ Color.DarkOrange,     Color.TextBg ], // DarkOrange
+        [ Color.DarkYellow,     Color.TextBg ], // DarkYellow
+        [ Color.DarkYuck,       Color.TextBg ], // DarkYuck
+        [ Color.DarkGreen,      Color.TextBg ], // DarkGreen
+        [ Color.DarkTeal,       Color.TextBg ], // DarkTeal
+        [ Color.DarkBlue,       Color.TextBg ], // DarkBlue
+        [ Color.DarkDeepBlue,   Color.TextBg ], // DarkDeepBlue
+        [ Color.DarkPurple,     Color.TextBg ], // DarkPurple
+        [ Color.DarkMagenta,    Color.TextBg ], // DarkMagenta
+        [ Color.DarkPink,       Color.TextBg ], // DarkPink
     ];
 
     public static readonly Dictionary<Highlight, (ColorPair pair, uint attr)> HighlightDefs = new() {
-        { Highlight.Text,             (ColorPair.Text,    0) },
-        { Highlight.TextSel,          (ColorPair.TextSel, 0) },
-        { Highlight.TextSelUnderline, (ColorPair.TextSel, CursesAttribute.UNDERLINE) },
-        { Highlight.TextWarning,      (ColorPair.Warning, 0)},
-        { Highlight.TextError,        (ColorPair.Error,   0)}
+        { Highlight.Text,               (ColorPair.Text,           0) },
+        { Highlight.TextSel,            (ColorPair.TextSel,        0) },
+        { Highlight.TextSelUnderline,   (ColorPair.TextSel,        CursesAttribute.UNDERLINE) },
+        { Highlight.TextWarning,        (ColorPair.Warning,        0)},
+        { Highlight.TextError,          (ColorPair.Error,          0)},
+        { Highlight.TextBold,           (ColorPair.Bold,           CursesAttribute.BOLD)},
+        { Highlight.TextDim,            (ColorPair.Dim,            0)},
+        { Highlight.TextHidden,         (ColorPair.Hidden,         CursesAttribute.DIM)},
+        { Highlight.TextWhite,          (ColorPair.White,          0)},
+        { Highlight.TextLightGray,      (ColorPair.LightGray,      0)},
+        { Highlight.TextDarkGray,       (ColorPair.DarkGray,       0)},
+        { Highlight.TextBlack,          (ColorPair.Black,          0)},
+        { Highlight.TextEmphasisRed,    (ColorPair.EmphasisRed,    CursesAttribute.BOLD)},
+        { Highlight.TextEmphasisGreen,  (ColorPair.EmphasisGreen,  CursesAttribute.BOLD)},
+        { Highlight.TextEmphasisBlue,   (ColorPair.EmphasisBlue,   CursesAttribute.BOLD)}
+
+        { Highlight.TextRedOrange,      (ColorPair.RedOrange,      0)},
+        { Highlight.TextOrange,         (ColorPair.Orange,         0)},
+        { Highlight.TextYellow,         (ColorPair.Yellow,         0)},
+        { Highlight.TextYuck,           (ColorPair.Yuck,           0)},
+        { Highlight.TextGreen,          (ColorPair.Green,          0)},
+        { Highlight.TextTeal,           (ColorPair.Teal,           0)},
+        { Highlight.TextBlue,           (ColorPair.Blue,           0)},
+        { Highlight.TextDeepBlue,       (ColorPair.DeepBlue,       0)},
+        { Highlight.TextPurple,         (ColorPair.Purple,         0)},
+        { Highlight.TextMagenta,        (ColorPair.Magenta,        0)},
+        { Highlight.TextPink,           (ColorPair.Pink,           0)},
+
+        { Highlight.TextLightRed,       (ColorPair.LightRed,       0)},
+        { Highlight.TextLightRedOrange, (ColorPair.LightRedOrange, 0)},
+        { Highlight.TextLightOrange,    (ColorPair.LightOrange,    0)},
+        { Highlight.TextLightYellow,    (ColorPair.LightYellow,    0)},
+        { Highlight.TextLightYuck,      (ColorPair.LightYuck,      0)},
+        { Highlight.TextLightGreen,     (ColorPair.LightGreen,     0)},
+        { Highlight.TextLightTeal,      (ColorPair.LightTeal,      0)},
+        { Highlight.TextLightBlue,      (ColorPair.LightBlue,      0)},
+        { Highlight.TextLightDeepBlue,  (ColorPair.LightDeepBlue,  0)},
+        { Highlight.TextLightPurple,    (ColorPair.LightPurple,    0)},
+        { Highlight.TextLightMagenta,   (ColorPair.LightMagenta,   0)},
+        { Highlight.TextLightPink,      (ColorPair.LightPink,      0)},
+
+        { Highlight.TextDarkRed,        (ColorPair.DarkRed,        0)},
+        { Highlight.TextDarkRedOrange,  (ColorPair.DarkRedOrange,  0)},
+        { Highlight.TextDarkOrange,     (ColorPair.DarkOrange,     0)},
+        { Highlight.TextDarkYellow,     (ColorPair.DarkYellow,     0)},
+        { Highlight.TextDarkYuck,       (ColorPair.DarkYuck,       0)},
+        { Highlight.TextDarkGreen,      (ColorPair.DarkGreen,      0)},
+        { Highlight.TextDarkTeal,       (ColorPair.DarkTeal,       0)},
+        { Highlight.TextDarkBlue,       (ColorPair.DarkBlue,       0)},
+        { Highlight.TextDarkDeepBlue,   (ColorPair.DarkDeepBlue,   0)},
+        { Highlight.TextDarkPurple,     (ColorPair.DarkPurple,     0)},
+        { Highlight.TextDarkMagenta,    (ColorPair.DarkMagenta,    0)},
+        { Highlight.TextDarkPink,       (ColorPair.DarkPink,       0)},
     };
 
     public static ColorPair GetPair(this Highlight highlight) => HighlightDefs[highlight].pair;
