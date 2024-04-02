@@ -11,12 +11,11 @@ public class Window : Drawable {
     }
     public override nint Handle { get; protected set; } // Handle to the actual thing (pad, panel, etc)
 
-    public Window(string name, Highlight highlight, int xi, int yi, int wi, int hi) {
+    public Window(Highlight highlight, int xi, int yi, int wi, int hi) {
         Handle = NCurses.NewWindow(hi, wi, yi, xi);
         NCurses.NoDelay(Handle, true);
         NCurses.Keypad(Handle, true);
         ChangeHighlight(highlight);
-        Name = name;
         x = xi;
         y = yi;
         w = wi;

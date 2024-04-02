@@ -35,7 +35,7 @@ public class DebugPopup : Popup {
         (Highlight.Text, (state) => $"Player chunk position: {(state.Player != null ? state.Player.ChunkPosition : 0)}")
     ];
 
-    public DebugPopup() : base("Debug", Highlight.Text, 2, 2, WIDTH, segments.Length + 2) { }
+    public DebugPopup() : base(Highlight.Text, 2, 2, WIDTH, segments.Length + 2) { }
 
     public override void HandleTermResize() { } // Do nothing. It's in the top left of the screen, hopefully nothing bad will happen.
 

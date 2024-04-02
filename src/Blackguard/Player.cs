@@ -1,35 +1,25 @@
 using System;
 using System.IO;
 using System.Numerics;
+using Blackguard.Items;
 using Blackguard.Tiles;
 using Blackguard.UI;
+using Blackguard.UI.Popups;
 using Blackguard.Utilities;
 using Mindmagma.Curses;
-using Newtonsoft.Json;
 using static Blackguard.Game;
 
 namespace Blackguard;
 
-[JsonObject(MemberSerialization.OptIn)]
 public class Player : ISizeProvider {
     // Serialized state
-    [JsonProperty]
     public string Name { get; private set; }
-
-    [JsonProperty]
     public DateTime CreationDate { get; private set; }
-
-    [JsonProperty]
     public TimeSpan Playtime { get; private set; }
-
-    [JsonProperty]
     public PlayerType PlayerType;
-
-    [JsonProperty]
     public RaceType Race;
-
-    [JsonProperty]
     public Vector2 Position;
+    public Item[] Inventory;
 
     // Other stuff
     public string SavePath => Path.Combine(PlayersPath, Name + ".plr");
@@ -38,8 +28,8 @@ public class Player : ISizeProvider {
     public Vector2 ChunkPosition => new((float)Math.Floor(Position.X / Chunk.CHUNKSIZE), (float)Math.Floor(Position.Y / Chunk.CHUNKSIZE));
 
     // Stats
-    public int MaxMana;
-    public int MaxHealth;
+    public int MaxMana = 100;
+    public int MaxHealth = 100;
     public int MaxSpeed;
     public double BluntEffect;
     public double SlashEffect;
@@ -58,6 +48,8 @@ public class Player : ISizeProvider {
 
     public Player(string name, PlayerType type, RaceType race) {
         Name = name;
+        Inventory = new Item[30];
+        Array.Fill(Inventory, new Item(Registry.GetDefinition<Empty>()));
         CreationDate = DateTime.Now;
         Playtime = TimeSpan.Zero;
         PlayerType = type;
@@ -67,6 +59,7 @@ public class Player : ISizeProvider {
 
     public static Player CreateNew(string name, PlayerType type, RaceType race) {
         Player player = new(name, type, race);
+        player.Inventory[2] = new Item(Registry.GetDefinition<Items.Dirt>(), 24);
 
         player.Serialize();
 
@@ -111,6 +104,12 @@ public class Player : ISizeProvider {
                 state.ViewOrigin.Y += changeY;
             }
         }
+
+        if (input.KeyPressed('e'))
+            state.OpenPopup(new InventoryPopup(Inventory), true);
+
+        if (input.KeyPressed('p'))
+            state.OpenPopup(new PausePopup(), true);
     }
 
     public void Render(Drawable drawable, int x, int y) {
@@ -118,15 +117,42 @@ public class Player : ISizeProvider {
     }
 
     public void Serialize() {
-        string json = JsonConvert.SerializeObject(this);
+        using FileStream fs = new(SavePath, FileMode.OpenOrCreate);
+        using BinaryWriter w = new(fs);
 
-        File.WriteAllText(SavePath, json);
+        w.Write(Name);
+        w.Write(CreationDate.ToBinary());
+        w.Write(Playtime.Ticks);
+        w.Write((int)PlayerType);
+        w.Write((int)Race);
+        w.Write(Position.X);
+        w.Write(Position.Y);
+
+        foreach (Item item in Inventory)
+            item.Serialize(w);
     }
 
     public static Player? Deserialize(string path) {
-        string json = File.ReadAllText(path);
+        using FileStream fs = new(path, FileMode.Open);
+        using BinaryReader r = new(fs);
 
-        return JsonConvert.DeserializeObject<Player>(json);
+        string name = r.ReadString();
+        DateTime creationDate = DateTime.FromBinary(r.ReadInt64());
+        TimeSpan playtime = new(r.ReadInt64());
+        PlayerType type = (PlayerType)r.ReadInt32();
+        RaceType race = (RaceType)r.ReadInt32();
+        Vector2 position = new(r.ReadSingle(), r.ReadSingle());
+        Item[] inventory = new Item[30];
+
+        for (int i = 0; i < 30; i++)
+            inventory[i] = Item.Deserialize(r);
+
+        return new Player(name, type, race) {
+            CreationDate = creationDate,
+            Playtime = playtime,
+            Position = position,
+            Inventory = inventory,
+        };
     }
 
     public void Delete() {

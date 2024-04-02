@@ -71,6 +71,7 @@ public enum ColorPair : uint {
     Grass,
     Dirt,
     Stone,
+    Mana,
 }
 
 public enum Highlight {
@@ -82,6 +83,7 @@ public enum Highlight {
     Grass,
     Dirt,
     Stone,
+    Mana,
 }
 
 public static class ColorHandler {
@@ -154,18 +156,20 @@ public static class ColorHandler {
         [ Color.Red,        Color.TextBg     ], // Warning
         [ Color.LightGreen, Color.LightGreen ], // Grass
         [ Color.DarkRed,    Color.DarkRed    ], // Dirt
-        [ Color.Gray50,     Color.Gray50     ]  // Stone
+        [ Color.Gray50,     Color.Gray50     ], // Stone
+        [ Color.DarkBlue,   Color.TextBg     ], // Mana
     ];
 
     public static readonly Dictionary<Highlight, (ColorPair pair, uint attr)> HighlightDefs = new() {
         { Highlight.Text,             (ColorPair.Text,    0) },
         { Highlight.TextSel,          (ColorPair.TextSel, 0) },
         { Highlight.TextSelUnderline, (ColorPair.TextSel, CursesAttribute.UNDERLINE) },
-        { Highlight.TextWarning,      (ColorPair.Warning, 0)},
-        { Highlight.TextError,        (ColorPair.Error,   0)},
-        { Highlight.Grass,            (ColorPair.Grass,   0)},
-        { Highlight.Dirt,             (ColorPair.Dirt,    0)},
-        { Highlight.Stone,            (ColorPair.Stone,   0)}
+        { Highlight.TextWarning,      (ColorPair.Warning, 0 )},
+        { Highlight.TextError,        (ColorPair.Error,   0 )},
+        { Highlight.Grass,            (ColorPair.Grass,   0 )},
+        { Highlight.Dirt,             (ColorPair.Dirt,    0 )},
+        { Highlight.Stone,            (ColorPair.Stone,   0 )},
+        { Highlight.Mana,             (ColorPair.Mana,    0 )}
     };
 
     // Gets the pair number

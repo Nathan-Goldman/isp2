@@ -78,7 +78,6 @@ public class PlayerSelectionScene : Scene {
             UIPlayer p = (UIPlayer)playerList.GetSelectedElement();
             state.OpenPopup(
                 new ConfirmationPopup(
-                    "DeletePlayerConfirmation",
                     [$"Are you sure you want to delete the player {p.Player.Name}"],
                     null,
                     (_) => {

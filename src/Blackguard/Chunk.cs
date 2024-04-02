@@ -39,8 +39,8 @@ public class Chunk {
         using BinaryWriter w = new(compressor);
 
         foreach (Tile t in Tiles) {
-            w.Write(t.Foreground);
             w.Write(t.Type.Id);
+            w.Write(t.Foreground);
         }
     }
 
@@ -57,8 +57,8 @@ public class Chunk {
 
         for (int i = 0; i < CHUNKSIZE; i++) {
             for (int j = 0; j < CHUNKSIZE; j++) {
-                bool fg = r.ReadBoolean();
                 int id = r.ReadInt32();
+                bool fg = r.ReadBoolean();
 
                 chunk.Tiles[i, j] = new Tile(Registry.GetDefinition<TileDefinition>(id), fg);
             }

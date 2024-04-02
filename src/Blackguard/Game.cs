@@ -31,6 +31,7 @@ public class Game {
     private bool nextQueued = false;
     private bool backQueued = false;
     private readonly List<Popup> popups = new();
+    private readonly Stack<Popup> focusStack = new();
     private readonly List<(Popup, bool)> pendingOpen = new();
 
     public InputHandler Input { private set; get; }
@@ -53,7 +54,7 @@ public class Game {
     public Game() {
         InitializeDirectories();
         Input = new InputHandler();
-        CurrentPanel = Panel.NewFullScreenPanel("Base Panel", Highlight.Text);
+        CurrentPanel = Panel.NewFullScreenPanel(Highlight.Text);
         scenes.Add(new MainMenuScene());
         oldSize = (NCurses.Lines, NCurses.Columns);
     }
@@ -282,6 +283,8 @@ public class Game {
         else
             return;
 
+        scenes[sceneIdx].Close(this);
+        scenes[changeIdx].Initialize(this);
         sceneIdx = changeIdx;
         CurrentPanel.Clear();
     }
@@ -299,8 +302,16 @@ public class Game {
 
         NCurses.UpdatePanels();
 
-        if (popup.Focused)
-            CurrentScene.Focused = true;
+        if (popup.Focused) {
+            if (focusStack.Count > 0) {
+                focusStack.Pop();
+
+                if (focusStack.Count > 0)
+                    focusStack.Peek().Focused = true;
+                else
+                    CurrentScene.Focused = true;
+            }
+        }
     }
 
     public void ClosePopupsByType<T>() where T : Popup {
@@ -339,13 +350,27 @@ public class Game {
                 NCurses.TopPanel(popup.Panel.Handle);
 
                 if (focus) {
+                    if (focusStack.Count > 0)
+                        focusStack.Peek().Focused = false;
+                    else
+                        CurrentScene.Focused = false;
+
                     popup.Focused = true;
-                    CurrentScene.Focused = false;
+                    focusStack.Push(popup);
                 }
             }
 
             pendingOpen.Clear();
         }
+    }
+
+    public void Save(bool alert = false) {
+        Player?.Serialize();
+
+        World?.Serialize();
+
+        if (alert)
+            OpenPopup(new InfoPopup(InfoType.Info, ["Saved successfully!"]), true);
     }
 
     public class InputHandler() {

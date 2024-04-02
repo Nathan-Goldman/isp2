@@ -54,8 +54,8 @@ public static class Registry {
     }
 
     // Given a derived definition (Dirt, Grass, ...) get the appropriate id
-    public static int GetId<T>() {
+    public static int GetId<T>() where T : Definition {
         Type t = typeof(T);
-        return registriesByDefinitionType[t].defsByType[t].Id;
+        return registriesByDefinitionType[t.BaseType].defsByType[t].Id;
     }
 }

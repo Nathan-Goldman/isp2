@@ -51,12 +51,12 @@ public class PlayerCreationScene : Scene {
             string storedText = _nameInput.GetStoredText();
 
             if (storedText.Length == 0) {
-                state.OpenPopup(new InfoPopup("NameTooShortWarning", InfoType.Warning, ["A name must be choosen to continue!"]), true);
+                state.OpenPopup(new InfoPopup(InfoType.Warning, ["A name must be choosen to continue!"]), true);
                 return;
             }
 
             if (File.Exists(Path.Combine(Game.PlayersPath, storedText + ".plr"))) {
-                state.OpenPopup(new InfoPopup("PlayerExistsWarning", InfoType.Warning, [$"A player with the name {storedText} already exists!"]), true);
+                state.OpenPopup(new InfoPopup(InfoType.Warning, [$"A player with the name {storedText} already exists!"]), true);
                 return;
             }
 

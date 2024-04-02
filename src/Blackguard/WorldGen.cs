@@ -31,7 +31,6 @@ public class WorldGen {
             ret.Tiles[cx, cy] = new Tile(Registry.GetDefinition<Stone>(), true);
         }
 
-        ret.Serialize(basePath);
         return ret;
     }
 }

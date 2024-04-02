@@ -15,7 +15,7 @@ public class InfoPopup : Popup {
     private readonly UIContainer container;
     private readonly Highlight highlight;
 
-    public InfoPopup(string name, InfoType type, string[] contents) : base(name, Highlight.Text, contents.Max(s => s.Length) + 2, contents.Length + 4) {
+    public InfoPopup(InfoType type, string[] contents) : base(Highlight.Text, contents.Max(s => s.Length) + 2, contents.Length + 4) {
         highlight = type switch {
             InfoType.Info => Highlight.Text,
             InfoType.Warning => Highlight.TextWarning,
@@ -44,14 +44,16 @@ public class InfoPopup : Popup {
     }
 
     public override bool RunTick(Game state) {
+        if (!Focused)
+            return true;
+
         if (state.Input.KeyPressed(CursesKey.DOWN))
             container.Next(true);
 
         if (state.Input.KeyPressed(CursesKey.UP))
             container.Prev(true);
 
-        if (Focused)
-            container.ProcessInput(state);
+        container.ProcessInput(state);
 
         return true;
     }

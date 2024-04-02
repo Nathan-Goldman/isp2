@@ -15,11 +15,17 @@ public abstract class Scene {
 
     public virtual void HandleTermResize() { }
 
+    public virtual void Initialize(Game state) { }
+
     // Returns false to exit the game
     public abstract bool RunTick(Game state);
 
     public abstract void Render(Game state);
 
+    // When the scene is no longer idsplayed
+    public virtual void Close(Game state) { }
+
+    // To dispose of the scene
     public virtual void Finish() { }
 
     // Default impl handles navigating various UI Elements. For the game's main view it should not need to use this.

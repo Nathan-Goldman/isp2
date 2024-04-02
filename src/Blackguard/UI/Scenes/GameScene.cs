@@ -1,9 +1,14 @@
 using System.Numerics;
+using Blackguard.UI.Popups;
 using Blackguard.Utilities;
 
 namespace Blackguard.UI.Scenes;
 
 public class GameScene : Scene {
+    public override void Initialize(Game state) {
+        state.OpenPopup(new StatsPopup(state.Player));
+    }
+
     public override bool RunTick(Game state) {
         if (!Focused)
             return true;
@@ -21,5 +26,9 @@ public class GameScene : Scene {
         state.World.Render(state.CurrentPanel, state, state.CurrentPanel.w, state.CurrentPanel.h);
 
         state.Player.Render(state.CurrentPanel, (int)screenPos.X, (int)screenPos.Y);
+    }
+
+    public override void Close(Game state) {
+        state.ClosePopupsByType<StatsPopup>();
     }
 }

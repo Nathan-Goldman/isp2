@@ -12,7 +12,6 @@ namespace Blackguard.UI;
 public abstract class Drawable : IDisposable, ISizeProvider, IOffsetProvider {
     public virtual nint WHandle { get; protected set; } // Window handle
     public virtual nint Handle { get; protected set; } // Handle to the actual thing (pad, panel, etc)
-    public string Name { get; set; } = null!;
 
     private Highlight _highlight;
     public virtual Highlight Highlight {

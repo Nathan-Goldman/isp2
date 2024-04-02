@@ -21,7 +21,7 @@ public class UIInput : UIElement, ISelectable {
 
     // WARN: The implementation for big is kind of bad. Oh well
     public UIInput(Alignment alignment, string label, string previewText, int maxTextWidth, bool big = false) {
-        _alignment = alignment;
+        Alignment = alignment;
         _label = label;
         _previewText = previewText;
         _maxTextWidth = maxTextWidth;
@@ -37,13 +37,13 @@ public class UIInput : UIElement, ISelectable {
         int lpad = 0;
         int rpad = 0;
 
-        if (_alignment.HasFlag(Alignment.Right))
+        if (Alignment.HasFlag(Alignment.Right))
             lpad = _maxRenderWidth - input.Length;
-        else if (_alignment.HasFlag(Alignment.Center)) {
+        else if (Alignment.HasFlag(Alignment.Center)) {
             lpad = (_maxRenderWidth - input.Length) / 2;
             rpad = _maxRenderWidth - input.Length - lpad;
         }
-        else if (_alignment.HasFlag(Alignment.Left))
+        else if (Alignment.HasFlag(Alignment.Left))
             rpad = _maxRenderWidth - input.Length;
 
         return new string(' ', lpad) + input + new string(' ', rpad);

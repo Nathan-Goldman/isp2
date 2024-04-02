@@ -79,7 +79,6 @@ public class WorldSelectionScene : Scene {
             UIWorld w = (UIWorld)worldList.GetSelectedElement();
             state.OpenPopup(
                 new ConfirmationPopup(
-                    "DeletePlayerConfirmation",
                     [$"Are you sure you want to delete the player {w.World.Name}"],
                     null,
                     (_) => {

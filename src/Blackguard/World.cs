@@ -109,6 +109,9 @@ public class World {
         string json = JsonConvert.SerializeObject(this);
 
         File.WriteAllText(MetaSavePath, json);
+
+        foreach ((_, Chunk chunk) in ChunksByPosition)
+            chunk.Serialize(ChunksPath);
     }
 
     public static World? Deserialize(string path) {
