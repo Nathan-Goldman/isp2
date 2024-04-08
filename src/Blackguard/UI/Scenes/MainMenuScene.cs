@@ -19,9 +19,9 @@ public class MainMenuScene : Scene {
         UISpace topSpace = new(0, 10);
         UIText logoText = new(Logo);
         UIButton startButton = new("Start".ToLargeText(), (state) => { state.ForwardScene<PlayerSelectionScene>(); }) {
-            Norm = Highlight.Text,
-            Sel = Highlight.TextSel,
-            SelLastLine = Highlight.TextSelUnderline,
+            Norm = Highlight.TextBold,
+            Sel = Highlight.TextBoldSel,
+            SelLastLine = Highlight.TextBoldSelUnderline,
         };
         UIButton settingsButton = new("Settings".ToLargeText(), (_) => { }) {
             Norm = Highlight.Text,
@@ -34,9 +34,9 @@ public class MainMenuScene : Scene {
             SelLastLine = Highlight.TextSelUnderline,
         };
         UIButton quitButton = new("Quit".ToLargeText(), (_) => { shouldExit = true; }) {
-            Norm = Highlight.Text,
-            Sel = Highlight.TextSel,
-            SelLastLine = Highlight.TextSelUnderline,
+            Norm = Highlight.TextWarning,
+            Sel = Highlight.TextWarningSel,
+            SelLastLine = Highlight.TextWarningSelUnderline,
         };
         UISpace bottomSpace = new(0, 10);
 
