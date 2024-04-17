@@ -80,12 +80,14 @@ public class PlayerSelectionScene : Scene {
                 new ConfirmationPopup(
                     [$"Are you sure you want to delete the player {p.Player.Name}"],
                     null,
-                    (_) => {
+                    (s) => {
                         p.Player.Delete();
                         playerList.Remove(p);
 
                         if (!playerList.SelectFirstSelectable())
                             container.SelectFirstSelectable();
+
+                        s.CurrentPanel.Clear();
                     }
             ),
                 true);

@@ -81,13 +81,14 @@ public class WorldSelectionScene : Scene {
                 new ConfirmationPopup(
                     [$"Are you sure you want to delete the player {w.World.Name}"],
                     null,
-                    (_) => {
+                    (s) => {
                         w.World.Delete();
                         worldList.Remove(w);
 
                         if (!worldList.SelectFirstSelectable())
                             container.SelectFirstSelectable();
 
+                        s.CurrentPanel.Clear();
                     }
             ),
                 true);
