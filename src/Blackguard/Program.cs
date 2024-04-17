@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Blackguard.Entities;
 using Blackguard.Items;
 using Blackguard.Tiles;
 using Blackguard.Utilities;
@@ -55,6 +56,7 @@ public static class Program {
         NCurses.NoEcho(); // Stops input from being printed to the screen automatically
         NCurses.StartColor(); // Starts the color functionality
         ColorHandler.Init(); // Initialize all of our color pairs and highlights
+        Registry.InitializeDefinitionType<EntityDefinition>();
         Registry.InitializeDefinitionType<ItemDefinition>();
         Registry.InitializeDefinitionType<TileDefinition>(); // Initialize Tile definitions
 
