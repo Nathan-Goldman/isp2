@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Blackguard.UI.Elements;
 using Blackguard.Utilities;
@@ -5,33 +6,30 @@ using Mindmagma.Curses;
 
 namespace Blackguard.UI.Popups;
 
-public enum InfoType {
-    Info,
-    Warning,
-    Error
-}
-
-public class InfoPopup : Popup {
+public class ConfirmationPopup : Popup {
     private readonly UIContainer container;
-    private readonly Highlight highlight;
 
-    public InfoPopup(string name, InfoType type, string[] contents) : base(name, Highlight.Text, contents.Max(s => s.Length) + 2, contents.Length + 4) {
-        highlight = type switch {
-            InfoType.Info => Highlight.Text,
-            InfoType.Warning => Highlight.TextWarning,
-            InfoType.Error => Highlight.TextError,
-            _ => Highlight.Text,
-        };
+    public Highlight TextHighlight = Highlight.Text;
+    public Highlight Border = Highlight.Text;
 
+    public ConfirmationPopup(string name, string[] contents, Action<Game>? cancel, Action<Game>? ok) : base(name, Highlight.Text, contents.Max(s => s.Length) + 2, contents.Length + 5) {
         container = new(Alignment.Center) {
             Border = true,
-            BorderSel = highlight,
-            BorderUnsel = highlight,
+            BorderSel = Border,
+            BorderUnsel = Border,
         };
 
-        container.Add(new UIText(contents) { Highlight = highlight });
+        container.Add(new UIText(contents) { Highlight = TextHighlight });
         container.Add(new UISpace(0, 1));
-        container.Add(new UIButton(["Ok"], (s) => { s.ClosePopup(this); }));
+        // TODO: Allow buttons to be in a subcontainer and then aligned horizontally
+        container.Add(new UIButton(["Cancel"], (s) => {
+            cancel?.Invoke(s);
+            s.ClosePopup(this);
+        }));
+        container.Add(new UIButton(["Ok"], (s) => {
+            ok?.Invoke(s);
+            s.ClosePopup(this);
+        }));
 
         container.Select();
         container.SelectFirstSelectable();

@@ -25,12 +25,12 @@ public class WorldCreationScene : Scene {
                 return;
             }
 
-            if (File.Exists(Path.Combine(Game.WorldPath, storedText + ".wld"))) {
+            if (Directory.Exists(Path.Combine(Game.WorldsPath, storedText))) {
                 state.OpenPopup(new InfoPopup("WorldExistsWarning", InfoType.Warning, [$"A world with the name {storedText} already exists!"]), true);
                 return;
             }
 
-            callback?.Invoke(new World(_nameInput.GetStoredText()));
+            callback?.Invoke(World.CreateNew(state, _nameInput.GetStoredText()));
 
             state.PrevScene();
         });
@@ -49,6 +49,6 @@ public class WorldCreationScene : Scene {
     }
 
     public override void Render(Game state) {
-        container.Render(state.CurrentWin, 0, 0, state.CurrentWin.w, state.CurrentWin.h);
+        container.Render(state.CurrentPanel, 0, 0, state.CurrentPanel.w, state.CurrentPanel.h);
     }
 }

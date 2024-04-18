@@ -1,9 +1,12 @@
 using System;
 using System.IO;
 using System.Numerics;
+using Blackguard.Tiles;
 using Blackguard.UI;
 using Blackguard.Utilities;
+using Mindmagma.Curses;
 using Newtonsoft.Json;
+using static Blackguard.Game;
 
 namespace Blackguard;
 
@@ -25,11 +28,14 @@ public class Player : ISizeProvider {
     [JsonProperty]
     public RaceType Race;
 
+    [JsonProperty]
+    public Vector2 Position;
+
     // Other stuff
-    public string SavePath => Path.Combine(Game.PlayerPath, Name + ".plr");
+    public string SavePath => Path.Combine(PlayersPath, Name + ".plr");
     public string Glyph { get; private set; }
-    public Vector2 Position { get; private set; }
     public Highlight Highlight { get; private set; }
+    public Vector2 ChunkPosition => new((float)Math.Floor(Position.X / Chunk.CHUNKSIZE), (float)Math.Floor(Position.Y / Chunk.CHUNKSIZE));
 
     // Stats
     public int MaxMana;
@@ -59,6 +65,54 @@ public class Player : ISizeProvider {
         Glyph = "#";
     }
 
+    public static Player CreateNew(string name, PlayerType type, RaceType race) {
+        Player player = new(name, type, race);
+
+        player.Serialize();
+
+        return player;
+    }
+
+    public void Initialize(Game state) {
+        HandleTermResize(state);
+    }
+
+    public void RunTick(Game state) {
+        ProcessInput(state);
+    }
+
+    private void ProcessInput(Game state) {
+        InputHandler input = state.Input;
+
+        int changeX = 0;
+        int changeY = 0;
+
+        if (input.KeyPressed('w'))
+            changeY--;
+
+        if (input.KeyPressed('a'))
+            changeX--;
+
+        if (input.KeyPressed('s'))
+            changeY++;
+
+        if (input.KeyPressed('d'))
+            changeX++;
+
+        if (changeX != 0 || changeY != 0) {
+            int nPosX = (int)Position.X + changeX;
+            int nPosY = (int)Position.Y + changeY;
+
+            Tile? next = state.World.GetTile(new Vector2(nPosX, nPosY));
+            if (next is not null && !next.Value.Foreground) {
+                Position.X = nPosX;
+                Position.Y = nPosY;
+                state.ViewOrigin.X += changeX;
+                state.ViewOrigin.Y += changeY;
+            }
+        }
+    }
+
     public void Render(Drawable drawable, int x, int y) {
         drawable.AddLinesWithHighlight((Highlight, x, y, Glyph));
     }
@@ -75,8 +129,19 @@ public class Player : ISizeProvider {
         return JsonConvert.DeserializeObject<Player>(json);
     }
 
+    public void Delete() {
+        File.Delete(SavePath);
+    }
+
     public (int w, int h) GetSize() {
         return (1, 1); // May be expanded eventually depending on how the player is rendered
+    }
+
+    public void HandleTermResize(Game state) {
+        state.ViewOrigin = new Vector2(
+            (int)(Position.X - NCurses.Columns / 2),
+            (int)(Position.Y - NCurses.Lines / 2)
+        );
     }
 
 }

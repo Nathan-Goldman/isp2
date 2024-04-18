@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Blackguard.UI.Elements;
+using Blackguard.UI.Popups;
 using Blackguard.Utilities;
+using Mindmagma.Curses;
 
 namespace Blackguard.UI.Scenes;
 
@@ -14,6 +16,7 @@ public class PlayerSelectionScene : Scene {
 
     private readonly Action<Game, Player> selectCallback = (s, p) => {
         s.Player = p;
+        s.Player.Initialize(s);
         s.ForwardScene<WorldSelectionScene>();
     };
 
@@ -29,7 +32,7 @@ public class PlayerSelectionScene : Scene {
         container.Add(new UIText("Select a Player".ToLargeText()));
         container.Add(playerList);
 
-        IEnumerable<string> files = Directory.GetFiles(Game.PlayerPath).Where((f) => Path.GetExtension(f) == ".plr");
+        IEnumerable<string> files = Directory.GetFiles(Game.PlayersPath).Where((f) => Path.GetExtension(f) == ".plr");
 
         if (files.Any()) {
             foreach (string file in files) {
@@ -47,7 +50,6 @@ public class PlayerSelectionScene : Scene {
         container.Add(new UIButton("Create New Player".ToLargeText(), (s) => s.ForwardScene<PlayerCreationScene>((data) => {
             if (data != null) {
                 Player created = (Player)data;
-                created.Serialize();
                 playerList.Add(new UIPlayer(created, selectCallback));
                 container.Remove(noneFound);
             }
@@ -65,10 +67,33 @@ public class PlayerSelectionScene : Scene {
 
     public override bool RunTick(Game state) {
         ProcessInput(state);
+
         return true;
     }
 
+    public override void ProcessInput(Game state) {
+        base.ProcessInput(state);
+
+        if (state.Input.KeyPressed(CursesKey.DELETEKEY) && container.GetSelectedElement() is UIContainer) {
+            UIPlayer p = (UIPlayer)playerList.GetSelectedElement();
+            state.OpenPopup(
+                new ConfirmationPopup(
+                    "DeletePlayerConfirmation",
+                    [$"Are you sure you want to delete the player {p.Player.Name}"],
+                    null,
+                    (_) => {
+                        p.Player.Delete();
+                        playerList.Remove(p);
+
+                        if (!playerList.SelectFirstSelectable())
+                            container.SelectFirstSelectable();
+                    }
+            ),
+                true);
+        }
+    }
+
     public override void Render(Game state) {
-        container.Render(state.CurrentWin, 0, 0, state.CurrentWin.w, state.CurrentWin.h);
+        container.Render(state.CurrentPanel, 0, 0, state.CurrentPanel.w, state.CurrentPanel.h);
     }
 }

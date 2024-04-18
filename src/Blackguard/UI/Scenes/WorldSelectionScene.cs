@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Blackguard.UI.Elements;
+using Blackguard.UI.Popups;
 using Blackguard.Utilities;
+using Mindmagma.Curses;
 
 namespace Blackguard.UI.Scenes;
 
@@ -14,6 +16,8 @@ public class WorldSelectionScene : Scene {
 
     private readonly Action<Game, World> selectCallback = (s, w) => {
         s.World = w;
+        s.World.Initialize(s);
+        s.inGame = true;
         s.ForwardScene<GameScene>();
     };
 
@@ -29,11 +33,11 @@ public class WorldSelectionScene : Scene {
         container.Add(new UIText("Select a World".ToLargeText()));
         container.Add(worldList);
 
-        IEnumerable<string> files = Directory.GetFiles(Game.WorldPath).Where((f) => Path.GetExtension(f) == ".wld");
+        IEnumerable<string> directories = Directory.GetDirectories(Game.WorldsPath);
 
-        if (files.Any()) {
-            foreach (string file in files) {
-                World? world = World.Deserialize(file);
+        if (directories.Any()) {
+            foreach (string directory in directories) {
+                World? world = World.Deserialize(Path.Combine(directory, "meta"));
                 if (world == null)
                     continue;
 
@@ -47,7 +51,6 @@ public class WorldSelectionScene : Scene {
         container.Add(new UIButton("Create New World".ToLargeText(), (s) => s.ForwardScene<WorldCreationScene>((data) => {
             if (data != null) {
                 World created = (World)data;
-                created.Serialize();
                 worldList.Add(new UIWorld(created, selectCallback));
                 container.Remove(noneFound);
             }
@@ -65,10 +68,34 @@ public class WorldSelectionScene : Scene {
 
     public override bool RunTick(Game state) {
         ProcessInput(state);
+
         return true;
     }
 
+    public override void ProcessInput(Game state) {
+        base.ProcessInput(state);
+
+        if (state.Input.KeyPressed(CursesKey.DELETEKEY) && container.GetSelectedElement() is UIContainer) {
+            UIWorld w = (UIWorld)worldList.GetSelectedElement();
+            state.OpenPopup(
+                new ConfirmationPopup(
+                    "DeletePlayerConfirmation",
+                    [$"Are you sure you want to delete the player {w.World.Name}"],
+                    null,
+                    (_) => {
+                        w.World.Delete();
+                        worldList.Remove(w);
+
+                        if (!worldList.SelectFirstSelectable())
+                            container.SelectFirstSelectable();
+
+                    }
+            ),
+                true);
+        }
+    }
+
     public override void Render(Game state) {
-        container.Render(state.CurrentWin, 0, 0, state.CurrentWin.w, state.CurrentWin.h);
+        container.Render(state.CurrentPanel, 0, 0, state.CurrentPanel.w, state.CurrentPanel.h);
     }
 }

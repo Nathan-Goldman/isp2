@@ -69,6 +69,9 @@ public enum ColorPair {
     Warning,
     WarningSel,
     Error,
+    Grass,
+    Dirt,
+    Stone,
     Bold,
     BoldSel,
     Dim,
@@ -172,6 +175,9 @@ public enum Highlight {
     TextDarkPurple,
     TextDarkMagenta,
     TextDarkPink,
+    Grass,
+    Dirt,
+    Stone,
 }
 
 public static class ColorHandler {
