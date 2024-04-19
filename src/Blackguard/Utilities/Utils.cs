@@ -129,4 +129,10 @@ public static class Utils {
 
         /* string[] split = str.Split(' '); */
     }
+
+    // If positive, then the two rectangles intersect
+    public static int Intersect(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2) {
+        return Math.Max(0, Math.Min(x1 + w1, x2 + w2) - Math.Max(x1, x2))
+            * Math.Max(0, Math.Min(y1 + h1, y2 + h2) - Math.Max(y1, y2));
+    }
 }

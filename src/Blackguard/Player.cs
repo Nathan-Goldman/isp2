@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Numerics;
+using Blackguard.Entities;
 using Blackguard.Items;
 using Blackguard.Tiles;
 using Blackguard.UI;
@@ -27,24 +28,40 @@ public class Player : ISizeProvider {
     public Highlight Highlight { get; private set; }
     public Vector2 ChunkPosition => new((float)Math.Floor(Position.X / Chunk.CHUNKSIZE), (float)Math.Floor(Position.Y / Chunk.CHUNKSIZE));
 
+    public int IFrames = 0;
+
     // Stats
-    public int MaxMana = 100;
     public int MaxHealth = 100;
+    public int Health = 100;
+    public int MaxMana = 100;
+    public float Mana = 100;
+    public float ManaRegenPerTick = 0.05f;
     public int MaxSpeed;
-    public double BluntEffect;
-    public double SlashEffect;
-    public double PierceEffect;
-    public double MagicEffect;
-    public double BaseEffect;
-    public double FireEffect;
-    public double ElectricityEffect;
-    public double IceEffect;
-    public double WaterEffect;
-    public double EarthEffect;
-    public double MindEffect;
-    public int Health;
-    public int Mana;
     public int Speed;
+
+    // Damage and defense modifiers
+    public double BluntEffect = 1f;
+    public double SlashEffect = 1f;
+    public double PierceEffect = 1f;
+    public double MagicEffect = 1f;
+    public double BaseEffect = 1f;
+    public double FireEffect = 1f;
+    public double ElectricityEffect = 1f;
+    public double IceEffect = 1f;
+    public double WaterEffect = 1f;
+    public double EarthEffect = 1f;
+    public double MindEffect = 1f;
+    public double BluntResist = 1f;
+    public double SlashResist = 1f;
+    public double PierceResist = 1f;
+    public double MagicResist = 1f;
+    public double BaseResist = 1f;
+    public double FireResist = 1f;
+    public double ElectricityResist = 1f;
+    public double IceResist = 1f;
+    public double WaterResist = 1f;
+    public double EarthResist = 1f;
+    public double MindResist = 1f;
 
     public Player(string name, PlayerType type, RaceType race) {
         Name = name;
@@ -110,10 +127,29 @@ public class Player : ISizeProvider {
 
         if (input.KeyPressed('p'))
             state.OpenPopup(new PausePopup(), true);
+
+        if (IFrames > 0)
+            IFrames--;
+
+        Mana += ManaRegenPerTick;
     }
 
     public void Render(Drawable drawable, int x, int y) {
-        drawable.AddLinesWithHighlight((Highlight, x, y, Glyph));
+        drawable.AddLinesWithHighlight(segments: (Highlight, x, y, Glyph));
+    }
+
+    public void Damage(int amount, int iFrames) {
+        if (IFrames > 0)
+            return;
+
+        // TODO: Modify damage amount based on modifiers. Needs to be discussed further
+
+        Health -= amount;
+        IFrames = iFrames;
+    }
+
+    public bool Collides(Entity e) {
+        return Utils.Intersect((int)Position.X, (int)Position.Y, 1, 1, (int)e.Position.X, (int)e.Position.Y, e.Type.Width, e.Type.Height) > 0;
     }
 
     public void Serialize() {
