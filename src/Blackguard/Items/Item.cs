@@ -1,5 +1,5 @@
 using System.IO;
-using System.Numerics;
+using Blackguard.Utilities;
 
 namespace Blackguard.Items;
 
@@ -9,9 +9,9 @@ public struct Item {
     // Instance data
     public int Stack;
     public bool InWorld;
-    public Vector2 Position;
+    public Point Position;
 
-    public Item(ItemDefinition type, int stack = 1, bool inWorld = false, Vector2 position = default) {
+    public Item(ItemDefinition type, int stack = 1, bool inWorld = false, Point position = default) {
         Type = type;
         Stack = stack;
         InWorld = inWorld;
@@ -30,7 +30,7 @@ public struct Item {
         int id = r.ReadInt32();
         int stack = r.ReadInt32();
         bool inWorld = r.ReadBoolean();
-        Vector2 position = new(r.ReadSingle(), r.ReadSingle());
+        Point position = new(r.ReadInt32(), r.ReadInt32());
 
         return new Item(Registry.GetDefinition<ItemDefinition>(id), stack, inWorld, position);
     }

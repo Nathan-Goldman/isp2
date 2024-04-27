@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Mindmagma.Curses;
@@ -55,7 +54,7 @@ public static class Utils {
     /// Returns the NOT BOUNDS CHECKED position relative to the top left of the screen
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 ToScreenPos(Vector2 topLeft, Vector2 pos) {
+    public static Point ToScreenPos(Point topLeft, Point pos) {
         return pos - topLeft;
     }
 
@@ -135,4 +134,8 @@ public static class Utils {
         return Math.Max(0, Math.Min(x1 + w1, x2 + w2) - Math.Max(x1, x2))
             * Math.Max(0, Math.Min(y1 + h1, y2 + h2) - Math.Max(y1, y2));
     }
+
+    public static Point ToChunkPosition(this Point p) => new((int)Math.Floor((float)p.X / Chunk.CHUNKSIZE), (int)Math.Floor((float)p.Y / Chunk.CHUNKSIZE));
+
+    public static Point ToWorldPosition(this Point p) => p * Chunk.CHUNKSIZE;
 }

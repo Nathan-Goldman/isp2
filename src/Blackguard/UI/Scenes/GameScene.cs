@@ -1,4 +1,3 @@
-using System.Numerics;
 using Blackguard.UI.Popups;
 using Blackguard.Utilities;
 
@@ -21,11 +20,11 @@ public class GameScene : Scene {
 
     public override void Render(Game state) {
         Player player = state.Player;
-        Vector2 screenPos = Utils.ToScreenPos(state.ViewOrigin, player.Position);
+        Point screenPos = Utils.ToScreenPos(state.ViewOrigin, player.Position);
 
         state.World.Render(state.CurrentPanel, state, state.CurrentPanel.w, state.CurrentPanel.h);
 
-        state.Player.Render(state.CurrentPanel, (int)screenPos.X, (int)screenPos.Y);
+        state.Player.Render(state.CurrentPanel, screenPos.X, screenPos.Y);
     }
 
     public override void Close(Game state) {

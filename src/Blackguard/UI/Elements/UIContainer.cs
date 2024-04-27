@@ -125,7 +125,8 @@ public class UIContainer : UIElement, ISelectable {
                     }
                 }
 
-                (_elements[selectedElement] as ISelectable)?.Deselect();
+                if (selectedElement < _elements.Count)
+                    (_elements[selectedElement] as ISelectable)?.Deselect();
                 selectedElement = i;
                 selectable.Select();
 

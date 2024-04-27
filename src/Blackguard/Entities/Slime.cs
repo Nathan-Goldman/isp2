@@ -19,5 +19,9 @@ public class Slime : EntityDefinition {
         WaterEffect = .5;
         EarthEffect = 1.0;
         MindEffect = 1.5;
+
+        SpawnConditions = [(state) => {
+            return true;
+        }];
     }
 }

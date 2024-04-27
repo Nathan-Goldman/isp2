@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using Blackguard.UI;
 using Blackguard.UI.Popups;
 using Blackguard.UI.Scenes;
@@ -21,7 +20,7 @@ public class Game {
     public World World { get; set; } = null!;
 
     public Panel CurrentPanel; // Shared panel used by the current scene
-    public Vector2 ViewOrigin;
+    public Point ViewOrigin;
     public bool inGame = false;
     public bool drawChunkOutline = false;
 
@@ -39,8 +38,11 @@ public class Game {
     private (int, int) oldSize = (0, 0);
     public uint ticks = 0;
 
+    public static Random Rand { get; set; }
+
     private Stopwatch gameTimer = null!;
     public TimeSpan totalElapsedTime = TimeSpan.Zero;
+    public DateTime Start;
     private TimeSpan accumulatedElapsedTime;
     private long previousTicks = 0;
     private readonly TimeSpan targetElapsedTime = TimeSpan.FromTicks(166667); // 60 fps. 1000/60 ms
@@ -51,12 +53,17 @@ public class Game {
     private TimeSpan worstCaseSleepPrecision = TimeSpan.FromMilliseconds(1);
     private static readonly TimeSpan maxElapsedTime = TimeSpan.FromMilliseconds(500);
 
+    static Game() {
+        Rand = new(Environment.TickCount);
+    }
+
     public Game() {
         InitializeDirectories();
         Input = new InputHandler();
         CurrentPanel = Panel.NewFullScreenPanel(Highlight.Text);
         scenes.Add(new MainMenuScene());
         oldSize = (NCurses.Lines, NCurses.Columns);
+        Start = DateTime.Now;
     }
 
     public static void InitializeDirectories() {

@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Numerics;
 using Blackguard.Entities;
 using Blackguard.Items;
 using Blackguard.Tiles;
@@ -19,25 +18,40 @@ public class Player : ISizeProvider {
     public TimeSpan Playtime { get; private set; }
     public PlayerType PlayerType;
     public RaceType Race;
-    public Vector2 Position;
+    public Point Position;
     public Item[] Inventory;
 
     // Other stuff
     public string SavePath => Path.Combine(PlayersPath, Name + ".plr");
     public string Glyph { get; private set; }
     public Highlight Highlight { get; private set; }
-    public Vector2 ChunkPosition => new((float)Math.Floor(Position.X / Chunk.CHUNKSIZE), (float)Math.Floor(Position.Y / Chunk.CHUNKSIZE));
-
+    public Point ChunkPosition => Position.ToChunkPosition();
+    public int nearbyEntities = 0;
     public int IFrames = 0;
 
     // Stats
     public int MaxHealth = 100;
-    public int Health = 100;
+    private float health;
+    public float Health {
+        get {
+            return health;
+        }
+        set {
+            health = Math.Clamp(value, 0, MaxHealth);
+        }
+    }
+    public float HealthRegenPerTick = 0.05f;
     public int MaxMana = 100;
-    public float Mana = 100;
+    private float mana;
+    public float Mana {
+        get {
+            return mana;
+        }
+        set {
+            mana = Math.Clamp(value, 0, MaxMana);
+        }
+    }
     public float ManaRegenPerTick = 0.05f;
-    public int MaxSpeed;
-    public int Speed;
 
     // Damage and defense modifiers
     public double BluntEffect = 1f;
@@ -85,6 +99,9 @@ public class Player : ISizeProvider {
 
     public void Initialize(Game state) {
         HandleTermResize(state);
+
+        Health = MaxHealth;
+        Mana = MaxMana;
     }
 
     public void RunTick(Game state) {
@@ -110,10 +127,10 @@ public class Player : ISizeProvider {
             changeX++;
 
         if (changeX != 0 || changeY != 0) {
-            int nPosX = (int)Position.X + changeX;
-            int nPosY = (int)Position.Y + changeY;
+            int nPosX = Position.X + changeX;
+            int nPosY = Position.Y + changeY;
 
-            Tile? next = state.World.GetTile(new Vector2(nPosX, nPosY));
+            Tile? next = state.World.GetTile(new Point(nPosX, nPosY));
             if (next is not null && !next.Value.Foreground) {
                 Position.X = nPosX;
                 Position.Y = nPosY;
@@ -131,6 +148,7 @@ public class Player : ISizeProvider {
         if (IFrames > 0)
             IFrames--;
 
+        Health += HealthRegenPerTick;
         Mana += ManaRegenPerTick;
     }
 
@@ -149,7 +167,7 @@ public class Player : ISizeProvider {
     }
 
     public bool Collides(Entity e) {
-        return Utils.Intersect((int)Position.X, (int)Position.Y, 1, 1, (int)e.Position.X, (int)e.Position.Y, e.Type.Width, e.Type.Height) > 0;
+        return Utils.Intersect(Position.X, Position.Y, 1, 1, e.Position.X, e.Position.Y, e.Type.Width, e.Type.Height) > 0;
     }
 
     public void Serialize() {
@@ -177,7 +195,7 @@ public class Player : ISizeProvider {
         TimeSpan playtime = new(r.ReadInt64());
         PlayerType type = (PlayerType)r.ReadInt32();
         RaceType race = (RaceType)r.ReadInt32();
-        Vector2 position = new(r.ReadSingle(), r.ReadSingle());
+        Point position = new(r.ReadInt32(), r.ReadInt32());
         Item[] inventory = new Item[30];
 
         for (int i = 0; i < 30; i++)
@@ -200,9 +218,9 @@ public class Player : ISizeProvider {
     }
 
     public void HandleTermResize(Game state) {
-        state.ViewOrigin = new Vector2(
-            (int)(Position.X - NCurses.Columns / 2),
-            (int)(Position.Y - NCurses.Lines / 2)
+        state.ViewOrigin = new Point(
+            Position.X - NCurses.Columns / 2,
+            Position.Y - NCurses.Lines / 2
         );
     }
 

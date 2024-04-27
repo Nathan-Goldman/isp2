@@ -1,3 +1,7 @@
+using Blackguard.UI;
+using Blackguard.Utilities;
+using SpawnCondition = System.Func<Blackguard.Game, bool>;
+
 namespace Blackguard.Entities;
 
 public abstract class EntityDefinition : Registry.Definition {
@@ -20,8 +24,13 @@ public abstract class EntityDefinition : Registry.Definition {
     public double EarthEffect;
     public double MindEffect;
 
-    // Methods will be implemented later as needed
-    public virtual void Render() { }
+    public SpawnCondition[]? SpawnConditions;
 
-    public virtual void AI() { }
+    // Methods will be implemented later as needed
+    public virtual void Render(ref Entity e, Drawable drawable, int x, int y, int skipx = 0, int skipy = 0) {
+        // Default impl just draws the entity's glyph. Since it's a single char skipx and skipy can be ignored
+        drawable.AddCharWithHighlight(Highlight.Text, x, y, Glyph);
+    }
+
+    public virtual void AI(Game state, ref Entity e) { }
 }
