@@ -85,7 +85,7 @@ public class World {
     public void RunTick(Game state) {
         // Remove faraway chunks
         foreach ((Point position, Chunk chunk) in ChunksByPosition) {
-            if (Math.Abs(position.X - state.Player.ChunkPosition.Y) > simulationDistance.X || Math.Abs(position.Y - state.Player.ChunkPosition.Y) > simulationDistance.Y) {
+            if (Math.Abs(position.X - state.Player.ChunkPosition.X) > simulationDistance.X || Math.Abs(position.Y - state.Player.ChunkPosition.Y) > simulationDistance.Y) {
                 ChunksByPosition.Remove(key: position);
                 chunk.Serialize(ChunksPath);
                 state.Player.nearbyEntities -= chunk.Entities.Count;
@@ -182,8 +182,8 @@ public class World {
     }
 
     public void HandleTermResize() {
-        simulationDistance.X = NCurses.Columns / Chunk.CHUNKSIZE * 2;
-        simulationDistance.Y = NCurses.Lines / Chunk.CHUNKSIZE * 2;
+        simulationDistance.X = NCurses.Columns / Chunk.CHUNKSIZE;
+        simulationDistance.Y = NCurses.Lines / Chunk.CHUNKSIZE;
     }
 
     // This isn't uniform. I couldn't find how to make it uniform
@@ -219,17 +219,16 @@ public class World {
 
     public int SpawnEntitiesInWorld(Game state) {
         int numSpawned = 0;
-        int spawnRate = 600;
+        float spawnChance = 1 / 50f; // Chance for an entity to spawn any given tick
         int maxSpawns = 5;
 
-        // Check nearby < maxSpawns
-        if (state.Player.nearbyEntities > maxSpawns || Game.Rand.Next(spawnRate) != 0)
-            return 0;
-
-        foreach ((EntityDefinition eDef, SpawnCondition condition) in spawnConditions) {
-            if (condition(state)) {
-                Point pos = RandPosOffscreen(state);
-                ChunksByPosition[pos.ToChunkPosition()].Entities.Add(new(eDef, pos));
+        if (state.Player.nearbyEntities < maxSpawns && Game.Rand.NextSingle() < spawnChance) {
+            foreach ((EntityDefinition eDef, SpawnCondition condition) in spawnConditions) {
+                if (condition(state)) {
+                    Point pos = RandPosOffscreen(state);
+                    ChunksByPosition[pos.ToChunkPosition()].Entities.Add(new(eDef, pos));
+                    numSpawned++;
+                }
             }
         }
 

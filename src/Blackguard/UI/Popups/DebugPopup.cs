@@ -28,11 +28,12 @@ public class DebugPopup : Popup {
         (Highlight.Text, (state) => $"Ticks: {state.ticks}"),
         (Highlight.Text, (state) => $"Seconds (from ticks): {state.ticks / 60}"),
         (Highlight.Text, (state) => $"Elapsed Time: {DateTime.Now - state.Start}"),
-        (Highlight.Text, (state) => $"Seconds (from time): {(DateTime.Now - state.Start).Seconds}"),
+        (Highlight.Text, (state) => $"Seconds (from time): {(DateTime.Now - state.Start).TotalSeconds}"),
         (Highlight.Text, (state) => FormatIEnumerable("Keycodes: ", state.Input.HasInputThisTick(), state.Input.Keycodes())),
         (Highlight.Text, (state) => FormatIEnumerable("Keynames: ", state.Input.HasInputThisTick(), state.Input.Keynames())),
         (Highlight.Text, (state) => $"Player position: {(state.Player != null ? state.Player.Position : 0)}"),
         (Highlight.Text, (state) => $"Player chunk position: {(state.Player != null ? state.Player.ChunkPosition : 0)}"),
+        (Highlight.Text, (state) => $"Player nearby Entities: {state.Player.nearbyEntities}"),
     ];
 
     public DebugPopup() : base(Highlight.Text, 2, 2, WIDTH, segments.Length + 2) { }

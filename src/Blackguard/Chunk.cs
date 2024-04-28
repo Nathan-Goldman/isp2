@@ -49,9 +49,8 @@ public class Chunk {
 
 
     public void Serialize(string basePath) {
-        using FileStream uncompressed = new(Path.Combine(basePath, $"{Position.X}:{Position.Y}.chunk"), FileMode.OpenOrCreate);
-        using DeflateStream compressor = new(uncompressed, CompressionLevel.Optimal);
-        using BinaryWriter w = new(compressor);
+        using FileStream fs = new(Path.Combine(basePath, $"{Position.X}:{Position.Y}.chunk"), FileMode.OpenOrCreate);
+        using BinaryWriter w = new(fs);
 
         foreach (Tile t in Tiles) {
             w.Write(t.Type.Id);
@@ -64,9 +63,8 @@ public class Chunk {
         if (!File.Exists(path))
             return null;
 
-        using FileStream compressed = new(path, FileMode.Open);
-        using DeflateStream decompressor = new(compressed, CompressionMode.Decompress);
-        using BinaryReader r = new(decompressor);
+        using FileStream fs = new(path, FileMode.Open);
+        using BinaryReader r = new(fs);
 
         Chunk chunk = new(position);
 
