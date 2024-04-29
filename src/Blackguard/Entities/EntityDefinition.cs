@@ -38,7 +38,7 @@ public abstract class EntityDefinition : Registry.Definition {
 
     public virtual void AI(Game state, ref Entity e) {
         if (state.Player.Collides(e)) {
-            state.Player.Damage(Damage, 60);
+            state.Player.Damage(ref e, Damage, 60);
         }
     }
 }

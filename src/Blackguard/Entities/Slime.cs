@@ -11,7 +11,7 @@ public class Slime : EntityDefinition {
         MaxHealth = 75;
         MaxMana = 50;
         MaxSpeed = 80;
-        Damage = 20;
+        Damage = 2;
         BluntEffect = .75;
         SlashEffect = 1.5;
         PierceEffect = 1.0;
@@ -56,7 +56,7 @@ public class Slime : EntityDefinition {
         else
             return;
 
-        Vector2 direction = e.Position.DirectionFrom(player.Position).Normalize();
+        Vector2 direction = e.Position.DirectionTo(player.Position).Normalize();
         e.Velocity = direction * 0.7f;
     }
 }

@@ -28,11 +28,13 @@ public class Player : ISizeProvider {
     public string Glyph { get; private set; }
     public Highlight Highlight { get; private set; }
     public Point ChunkPosition => Position.ToChunkPosition();
+    public Vector2 OldPosition;
     // Velocity is measured in tiles per tick
     public Vector2 Velocity;
     public float maxVelocity = 0.5f;
     public int nearbyEntities = 0;
     public int IFrames = 0;
+    public int RegenDelay = 0;
 
     // Stats
     public int MaxHealth = 100;
@@ -110,15 +112,11 @@ public class Player : ISizeProvider {
     }
 
     public void RunTick(Game state) {
-        ProcessInput(state);
-    }
-
-    private void ProcessInput(Game state) {
         if (Health < 0) {
             state.OpenPopup(
                 new InfoPopup(InfoType.Info,
                 [
-                    "You died!",
+                    "               You died!              ",
                     "Your player and world will be deleted."
                 ],
                 (s) => {
@@ -222,6 +220,7 @@ public class Player : ISizeProvider {
 
             Tile? next = state.World.GetTile(new Point((int)nPosX, (int)nPosY));
             if (next is not null && !next.Value.Foreground) {
+                OldPosition = Position;
                 Position.X = nPosX;
                 Position.Y = nPosY;
                 state.ViewOrigin.X = (int)Position.X - NCurses.Columns / 2;
@@ -238,7 +237,12 @@ public class Player : ISizeProvider {
         if (IFrames > 0)
             IFrames--;
 
-        Health += HealthRegenPerTick;
+        if (RegenDelay > 0)
+            RegenDelay--;
+
+        if (RegenDelay == 0)
+            Health += HealthRegenPerTick;
+
         Mana += ManaRegenPerTick;
     }
 
@@ -246,14 +250,27 @@ public class Player : ISizeProvider {
         drawable.AddLinesWithHighlight(segments: (Highlight, x, y, Glyph));
     }
 
-    public void Damage(int amount, int iFrames) {
+    public void Damage(ref Entity e, int amount, int iFrames, bool knockback = true) {
         if (IFrames > 0)
+            return;
+
+        Health -= amount;
+        IFrames = iFrames;
+        RegenDelay = iFrames * 2;
+
+        if (!knockback)
             return;
 
         // TODO: Modify damage amount based on modifiers. Needs to be discussed further
 
-        Health -= amount;
-        IFrames = iFrames;
+        if (e.Velocity.X == 0 && e.Velocity.Y == 0) {
+            if (Velocity.X == 0 && Velocity.Y == 0)
+                Velocity = OldPosition.DirectionTo(Position).Normalize() * -0.75f;
+            else
+                Velocity = Velocity.Normalize() * -0.75f;
+        }
+        else
+            Velocity = e.Velocity.Normalize() * 0.75f;
     }
 
     public bool Collides(Entity e) {

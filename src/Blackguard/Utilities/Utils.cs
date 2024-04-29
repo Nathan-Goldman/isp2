@@ -148,5 +148,5 @@ public static class Utils {
         return new(v.X / len, v.Y / len);
     }
 
-    public static Vector2 DirectionFrom(this Vector2 from, Vector2 to) => to - from;
+    public static Vector2 DirectionTo(this Vector2 from, Vector2 to) => to - from;
 }
