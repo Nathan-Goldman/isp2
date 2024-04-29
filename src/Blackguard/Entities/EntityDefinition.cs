@@ -12,6 +12,7 @@ public abstract class EntityDefinition : Registry.Definition {
     public int MaxMana;
     public int MaxHealth;
     public int MaxSpeed;
+    public int Damage;
     public double BluntEffect;
     public double SlashEffect;
     public double PierceEffect;
@@ -24,6 +25,9 @@ public abstract class EntityDefinition : Registry.Definition {
     public double EarthEffect;
     public double MindEffect;
 
+    public int DataSize = 0;
+    public int DataFSize = 0;
+
     public SpawnCondition[]? SpawnConditions;
 
     // Methods will be implemented later as needed
@@ -32,5 +36,9 @@ public abstract class EntityDefinition : Registry.Definition {
         drawable.AddCharWithHighlight(Highlight.Text, x, y, Glyph);
     }
 
-    public virtual void AI(Game state, ref Entity e) { }
+    public virtual void AI(Game state, ref Entity e) {
+        if (state.Player.Collides(e)) {
+            state.Player.Damage(Damage, 60);
+        }
+    }
 }

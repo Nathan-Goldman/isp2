@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
+using System.Runtime.InteropServices;
 using Blackguard.Entities;
 using Blackguard.Tiles;
 using Blackguard.UI;
@@ -35,6 +37,7 @@ public class World {
     public Point simulationDistance; // Number of chunks to simulate on all four sides of the player
 
     private List<(EntityDefinition, SpawnCondition)> spawnConditions = null!;
+    private List<(Chunk, Entity)> entitiesToMove = null!;
 
     public World(string name) {
         Name = name;
@@ -67,6 +70,7 @@ public class World {
     public void Initialize(Game state) {
         gen = new WorldGen(Seed);
         spawnConditions = new List<(EntityDefinition, SpawnCondition)>();
+        entitiesToMove = new();
 
         foreach ((Type _, Registry.Definition def) in Registry.GetRegistry<EntityDefinition>().defsByType) {
             EntityDefinition eDef = (EntityDefinition)def;
@@ -96,24 +100,30 @@ public class World {
 
         int netLoadedEntities = 0;
 
+        entitiesToMove.Clear();
         foreach ((_, Chunk chunk) in ChunksByPosition) {
-            for (int i = 0; i < chunk.Entities.Count; i++) {
-                Entity e = chunk.Entities[i];
+            Span<Entity> entitiesSpan = CollectionsMarshal.AsSpan(chunk.Entities);
+            for (int i = 0; i < entitiesSpan.Length; i++) {
+                ref Entity e = ref entitiesSpan[i];
 
                 Point oldpos = e.ChunkPosition;
                 e.Type.AI(state, ref e);
 
                 // Entity has moved into a different chunk
-                if (oldpos != e.ChunkPosition) {
-                    if (ChunksByPosition.TryGetValue(e.ChunkPosition, out Chunk? newChunk)) {
-                        newChunk.Entities.Add(e);
-                        netLoadedEntities++;
-                    }
-
-                    chunk.Entities.Remove(e);
-                    netLoadedEntities--;
-                }
+                if (oldpos != e.ChunkPosition)
+                    entitiesToMove.Add(item: (chunk, e));
             }
+        }
+
+        // Prevents entities from being updated twice if they move into a chunk that will be updated later.
+        foreach ((Chunk c, Entity e) in entitiesToMove) {
+            if (ChunksByPosition.TryGetValue(e.ChunkPosition, out Chunk? newChunk)) {
+                newChunk.Entities.Add(e);
+                netLoadedEntities++;
+            }
+
+            c.Entities.Remove(e);
+            netLoadedEntities--;
         }
 
         netLoadedEntities += SpawnEntitiesInWorld(state);
@@ -141,7 +151,7 @@ public class World {
             for (int i = 0; i < chunk.Entities.Count; i++) {
                 Entity e = chunk.Entities[i];
 
-                Point sp = Utils.ToScreenPos(state.ViewOrigin, e.Position);
+                Point sp = Utils.ToScreenPos(state.ViewOrigin, (Point)e.Position);
                 if (!Utils.CheckOutOfBounds(sp.X, sp.Y, e.Type.Width, e.Type.Height, maxw, maxh, out int byX, out int byY))
                     e.Type.Render(ref e, drawable, sp.X, sp.Y, 0, 0);
                 else if (Math.Abs(byX) < e.Type.Width && Math.Abs(byY) < e.Type.Height)
@@ -214,7 +224,7 @@ public class World {
                 break;
         }
 
-        return new(state.Player.Position.X + offX, state.Player.Position.Y + offY);
+        return new((int)state.Player.Position.X + offX, (int)state.Player.Position.Y + offY);
     }
 
     public int SpawnEntitiesInWorld(Game state) {
@@ -226,7 +236,7 @@ public class World {
             foreach ((EntityDefinition eDef, SpawnCondition condition) in spawnConditions) {
                 if (condition(state)) {
                     Point pos = RandPosOffscreen(state);
-                    ChunksByPosition[pos.ToChunkPosition()].Entities.Add(new(eDef, pos));
+                    ChunksByPosition[pos.ToChunkPosition()].Entities.Add(new(eDef, (Vector2)pos));
                     numSpawned++;
                 }
             }

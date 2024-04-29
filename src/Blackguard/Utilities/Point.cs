@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 
 namespace Blackguard.Utilities;
 
@@ -25,6 +26,9 @@ public struct Point {
 
     public static bool operator ==(Point a, Point b) => a.X == b.X && a.Y == b.Y;
     public static bool operator !=(Point a, Point b) => a.X != b.X || a.Y != b.Y;
+
+    public static explicit operator Vector2(Point a) => new(a.X, a.Y);
+    public static explicit operator Point(Vector2 a) => new((int)a.X, (int)a.Y);
 
     public readonly override bool Equals(object? obj) {
         if (obj is not Point b)

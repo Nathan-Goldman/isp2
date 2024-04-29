@@ -46,18 +46,18 @@ public class InventoryPopup : Popup {
         if (!Focused)
             return true;
 
-        if (state.Input.KeyPressed(CursesKey.RIGHT))
+        if (state.Input.KeyHit(CursesKey.RIGHT))
             container.Next(true);
 
-        if (state.Input.KeyPressed(CursesKey.LEFT))
+        if (state.Input.KeyHit(CursesKey.LEFT))
             container.Prev(true);
 
-        if (state.Input.KeyPressed(CursesKey.UP)) {
+        if (state.Input.KeyHit(CursesKey.UP)) {
             container.Prev(true);
             container.Prev(true);
         }
 
-        if (state.Input.KeyPressed(CursesKey.DOWN)) {
+        if (state.Input.KeyHit(CursesKey.DOWN)) {
             container.Next(true);
             container.Next(true);
         }
@@ -83,14 +83,14 @@ public class InventoryPopup : Popup {
             }
         }
 
-        if (state.Input.KeyPressed(CursesKey.BACKSPACE)) {
+        if (state.Input.KeyHit(CursesKey.BACKSPACE)) {
             if (tempSlot != null) {
                 tempSlot.Border = tempHighlight;
                 tempSlot = null;
             }
         }
 
-        if (state.Input.KeyPressed('e')) {
+        if (state.Input.KeyHit('e')) {
             state.ClosePopup(this);
         }
 

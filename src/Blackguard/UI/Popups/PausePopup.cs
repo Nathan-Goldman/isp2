@@ -35,13 +35,13 @@ public class PausePopup : Popup {
         if (!Focused)
             return true;
 
-        if (state.Input.KeyPressed(CursesKey.UP))
+        if (state.Input.KeyHit(CursesKey.UP))
             container.Prev(true);
 
-        if (state.Input.KeyPressed(CursesKey.DOWN))
+        if (state.Input.KeyHit(CursesKey.DOWN))
             container.Next(true);
 
-        if (state.Input.KeyPressed('p'))
+        if (state.Input.KeyHit('p'))
             state.ClosePopup(this);
 
         container.ProcessInput(state);

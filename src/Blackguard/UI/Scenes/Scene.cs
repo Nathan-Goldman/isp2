@@ -34,10 +34,10 @@ public abstract class Scene {
             return;
 
         // TODO: Terminal does not report keys every tick properly, so we may have to reduce the tick rate or figure out some other way to detect keys being held
-        if (state.Input.KeyPressed(CursesKey.DOWN))
+        if (state.Input.KeyHit(CursesKey.DOWN))
             container.Next(true);
 
-        if (state.Input.KeyPressed(CursesKey.UP))
+        if (state.Input.KeyHit(CursesKey.UP))
             container.Prev(true);
 
         container.ProcessInput(state);

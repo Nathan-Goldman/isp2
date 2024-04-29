@@ -1,10 +1,12 @@
 using System;
 using System.IO;
+using System.Numerics;
 using Blackguard.Entities;
 using Blackguard.Items;
 using Blackguard.Tiles;
 using Blackguard.UI;
 using Blackguard.UI.Popups;
+using Blackguard.UI.Scenes;
 using Blackguard.Utilities;
 using Mindmagma.Curses;
 using static Blackguard.Game;
@@ -18,7 +20,7 @@ public class Player : ISizeProvider {
     public TimeSpan Playtime { get; private set; }
     public PlayerType PlayerType;
     public RaceType Race;
-    public Point Position;
+    public Vector2 Position;
     public Item[] Inventory;
 
     // Other stuff
@@ -26,6 +28,9 @@ public class Player : ISizeProvider {
     public string Glyph { get; private set; }
     public Highlight Highlight { get; private set; }
     public Point ChunkPosition => Position.ToChunkPosition();
+    // Velocity is measured in tiles per tick
+    public Vector2 Velocity;
+    public float maxVelocity = 0.5f;
     public int nearbyEntities = 0;
     public int IFrames = 0;
 
@@ -37,7 +42,7 @@ public class Player : ISizeProvider {
             return health;
         }
         set {
-            health = Math.Clamp(value, 0, MaxHealth);
+            health = Math.Clamp(value, int.MinValue, MaxHealth);
         }
     }
     public float HealthRegenPerTick = 0.05f;
@@ -109,40 +114,125 @@ public class Player : ISizeProvider {
     }
 
     private void ProcessInput(Game state) {
+        if (Health < 0) {
+            state.OpenPopup(
+                new InfoPopup(InfoType.Info,
+                [
+                    "You died!",
+                    "Your player and world will be deleted."
+                ],
+                (s) => {
+                    s.ForwardScene<MainMenuScene>();
+                    s.Player.Delete();
+                    s.Player = null!;
+                    s.World.Delete();
+                    s.World = null!;
+                }
+            ),
+            true);
+        }
+
         InputHandler input = state.Input;
 
-        int changeX = 0;
-        int changeY = 0;
+        bool left = input.KeyHeld('a');
+        bool right = input.KeyHeld('d');
+        bool up = input.KeyHeld('w');
+        bool down = input.KeyHeld('s');
+        bool noWASD = !left && !right && !up && !down;
+        float accel = 0.01f;
 
-        if (input.KeyPressed('w'))
-            changeY--;
+        if (up && !down) {
+            if (Velocity.Y > 0f)
+                Velocity.Y *= 0.9f;
 
-        if (input.KeyPressed('a'))
-            changeX--;
+            Velocity.Y -= accel;
+            if (Velocity.Y < -maxVelocity)
+                Velocity.Y = -maxVelocity;
+        }
+        else if (down && !up) {
+            if (Velocity.Y < 0f)
+                Velocity.Y *= 0.9f;
 
-        if (input.KeyPressed('s'))
-            changeY++;
+            Velocity.Y += accel;
+            if (Velocity.Y > maxVelocity)
+                Velocity.Y = maxVelocity;
+        }
+        else if (Velocity.Y < -0.1 || Velocity.Y > 0.1) {
+            Velocity.Y *= 0.9f;
+        }
+        else {
+            Velocity.Y = 0f;
+        }
 
-        if (input.KeyPressed('d'))
-            changeX++;
+        if (left && !right) {
+            if (Velocity.X > 0f)
+                Velocity.X *= 0.9f;
 
-        if (changeX != 0 || changeY != 0) {
-            int nPosX = Position.X + changeX;
-            int nPosY = Position.Y + changeY;
+            Velocity.X -= accel;
+            if (Velocity.X < -maxVelocity)
+                Velocity.X = -maxVelocity;
+        }
+        else if (right && !left) {
+            if (Velocity.X < 0f)
+                Velocity.X *= 0.9f;
 
-            Tile? next = state.World.GetTile(new Point(nPosX, nPosY));
-            if (next is not null && !next.Value.Foreground) {
-                Position.X = nPosX;
-                Position.Y = nPosY;
-                state.ViewOrigin.X += changeX;
-                state.ViewOrigin.Y += changeY;
+            Velocity.X += accel;
+            if (Velocity.X > maxVelocity)
+                Velocity.X = maxVelocity;
+        }
+        else if (Velocity.X < -accel || Velocity.X > accel) {
+            Velocity.X *= 0.9f;
+        }
+        else {
+            Velocity.X = 0f;
+        }
+
+        // This is the best that can be done unless a better input solution is found.
+        bool inc1 = false;
+        int incx = 0;
+        int incy = 0;
+        if (noWASD) {
+            bool left1 = input.KeyHit('a');
+            bool right1 = input.KeyHit('d');
+            bool up1 = input.KeyHit('w');
+            bool down1 = input.KeyHit('s');
+
+            if (left1 && !right1) {
+                incx = -1;
+                inc1 = true;
+            }
+            else if (right1 && !left1) {
+                incx = 1;
+                inc1 = true;
+            }
+
+            if (up1 && !down1) {
+                incy = -1;
+                inc1 = true;
+            }
+            else if (down1 && !up1) {
+                incy = 1;
+                inc1 = true;
             }
         }
 
-        if (input.KeyPressed('e'))
+        if (Velocity.X != 0 || Velocity.Y != 0 || inc1) {
+            float nPosX = Position.X + Velocity.X + incx;
+            float nPosY = Position.Y + Velocity.Y + incy;
+
+            Tile? next = state.World.GetTile(new Point((int)nPosX, (int)nPosY));
+            if (next is not null && !next.Value.Foreground) {
+                Position.X = nPosX;
+                Position.Y = nPosY;
+                state.ViewOrigin.X = (int)Position.X - NCurses.Columns / 2;
+                state.ViewOrigin.Y = (int)Position.Y - NCurses.Lines / 2;
+            }
+        }
+
+        if (input.KeyHit('e'))
             state.OpenPopup(new InventoryPopup(Inventory), true);
 
-        if (input.KeyPressed('p'))
+        if (input.KeyHit('p'))
             state.OpenPopup(new PausePopup(), true);
 
         if (IFrames > 0)
@@ -195,7 +285,7 @@ public class Player : ISizeProvider {
         TimeSpan playtime = new(r.ReadInt64());
         PlayerType type = (PlayerType)r.ReadInt32();
         RaceType race = (RaceType)r.ReadInt32();
-        Point position = new(r.ReadInt32(), r.ReadInt32());
+        Vector2 position = new(r.ReadSingle(), r.ReadSingle());
         Item[] inventory = new Item[30];
 
         for (int i = 0; i < 30; i++)
@@ -219,8 +309,8 @@ public class Player : ISizeProvider {
 
     public void HandleTermResize(Game state) {
         state.ViewOrigin = new Point(
-            Position.X - NCurses.Columns / 2,
-            Position.Y - NCurses.Lines / 2
+            (int)Position.X - NCurses.Columns / 2,
+            (int)Position.Y - NCurses.Lines / 2
         );
     }
 

@@ -49,10 +49,10 @@ public class ConfirmationPopup : Popup {
         if (!Focused)
             return true;
 
-        if (state.Input.KeyPressed(CursesKey.LEFT))
+        if (state.Input.KeyHit(CursesKey.LEFT))
             container.Prev(true);
 
-        if (state.Input.KeyPressed(CursesKey.RIGHT))
+        if (state.Input.KeyHit(CursesKey.RIGHT))
             container.Next(true);
 
         container.ProcessInput(state);

@@ -20,7 +20,7 @@ public class GameScene : Scene {
 
     public override void Render(Game state) {
         Player player = state.Player;
-        Point screenPos = Utils.ToScreenPos(state.ViewOrigin, player.Position);
+        Point screenPos = Utils.ToScreenPos(state.ViewOrigin, (Point)player.Position);
 
         state.World.Render(state.CurrentPanel, state, state.CurrentPanel.w, state.CurrentPanel.h);
 

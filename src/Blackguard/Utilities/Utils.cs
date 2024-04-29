@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Mindmagma.Curses;
@@ -122,20 +123,30 @@ public static class Utils {
         ];
     }
 
-    public static string[] Wrap(this string str, int lines) {
-        throw new NotImplementedException();
-        /* string[] ret = new string[lines]; */
-
-        /* string[] split = str.Split(' '); */
-    }
+    public static string Pad(this string s, int w) => s.Length > w ? s[..w] : s + new string(' ', w - s.Length);
 
     // If positive, then the two rectangles intersect
-    public static int Intersect(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2) {
-        return Math.Max(0, Math.Min(x1 + w1, x2 + w2) - Math.Max(x1, x2))
-            * Math.Max(0, Math.Min(y1 + h1, y2 + h2) - Math.Max(y1, y2));
+    public static float Intersect(float x1f, float y1f, int w1, int h1, float x2f, float y2f, int w2, int h2) {
+        int x1 = (int)x1f;
+        int y1 = (int)y1f;
+        int x2 = (int)x2f;
+        int y2 = (int)y2f;
+
+        return Math.Max(0f, Math.Min(x1 + w1, x2 + w2) - Math.Max(x1, x2))
+            * Math.Max(0f, Math.Min(y1 + h1, y2 + h2) - Math.Max(y1, y2));
     }
 
     public static Point ToChunkPosition(this Point p) => new((int)Math.Floor((float)p.X / Chunk.CHUNKSIZE), (int)Math.Floor((float)p.Y / Chunk.CHUNKSIZE));
 
+    public static Point ToChunkPosition(this Vector2 v) => new((int)Math.Floor(v.X / Chunk.CHUNKSIZE), (int)Math.Floor(v.Y / Chunk.CHUNKSIZE));
+
     public static Point ToWorldPosition(this Point p) => p * Chunk.CHUNKSIZE;
+
+    public static Vector2 Normalize(this Vector2 v) {
+        float len = v.Length();
+
+        return new(v.X / len, v.Y / len);
+    }
+
+    public static Vector2 DirectionFrom(this Vector2 from, Vector2 to) => to - from;
 }
