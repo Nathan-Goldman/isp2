@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Blackguard.Entities;
 using Blackguard.Items;
 using Blackguard.Tiles;
@@ -36,25 +37,18 @@ public static class Program {
         Platform.Configure();
     }
 
+    [DllImport("cursesinit")]
+    private static extern nint initialize_ncurses();
+
     public static void Main(string[] args) {
         // Any arg parsing we eventually implement should be here, before any initialization
 
-        StdScreen = NCurses.InitScreen();
+        // Initialization moved into c library because it stops input-related things from breaking... somehow
+        StdScreen = initialize_ncurses();
 
-        if (!NCurses.HasColors() /*|| !NCurses.CanChangeColor()*/) { // Can change color is seemingly returning false on windows. We can decide if it's neccessary later
-            NCurses.EndWin();
-
-            Console.WriteLine("Terminal does not support colors. Please use a terminal that supports colors.");
-            Console.ReadKey();
+        if (StdScreen == nint.Zero)
             Environment.Exit(1);
-        }
 
-        Console.Title = "Blackguard";
-
-        NCurses.SetCursor(0); // Hide the cursor
-        NCurses.CBreak(); // Makes input immediately available to the terminal instead of performing line buffering
-        NCurses.NoEcho(); // Stops input from being printed to the screen automatically
-        NCurses.StartColor(); // Starts the color functionality
         ColorHandler.Init(); // Initialize all of our color pairs and highlights
         Registry.InitializeDefinitionType<EntityDefinition>();
         Registry.InitializeDefinitionType<ItemDefinition>();
@@ -72,14 +66,15 @@ public static class Program {
         }
         finally {
             NCurses.EndWin();
+            Console.WriteLine("\x1b[?1003l"); // Disable console mouse movement reporting
 
             if (exception != null)
                 Console.WriteLine(exception);
         }
-
     }
 
     private static void SIGINT(object? sender, ConsoleCancelEventArgs e) {
         NCurses.EndWin();
+        Console.WriteLine("\x1b[?1003l"); // Disable console mouse movement reporting
     }
 }

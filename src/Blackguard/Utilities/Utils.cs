@@ -123,7 +123,15 @@ public static class Utils {
         ];
     }
 
-    public static string Pad(this string s, int w) => s.Length > w ? s[..w] : s + new string(' ', w - s.Length);
+    public static string Pad(this string s, int w) {
+        if (s.Length == 0)
+            return s;
+
+        if (s.Length > w)
+            return s[..w];
+
+        return s + new string(' ', w - s.Length);
+    }
 
     // If positive, then the two rectangles intersect
     public static float Intersect(float x1f, float y1f, int w1, int h1, float x2f, float y2f, int w2, int h2) {

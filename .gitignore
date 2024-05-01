@@ -1,4 +1,4 @@
-﻿.vs/
+.vs/
 .vscode/
 !.vscode/launch.json
 !.vscode/tasks.json
@@ -10,3 +10,6 @@ obj/
 dotnet/
 scripts/run.bat
 scripts/build.bat
+
+*.so
+*.o

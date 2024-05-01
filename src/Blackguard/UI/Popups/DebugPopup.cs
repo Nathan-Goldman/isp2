@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using Blackguard.Utilities;
+using Mindmagma.Curses;
 
 namespace Blackguard.UI.Popups;
 
@@ -37,6 +38,14 @@ public class DebugPopup : Popup {
         (Highlight.Text, (state) => $"Player nearby Entities: {(state.Player != null ? state.Player.nearbyEntities : 0)}"),
         (Highlight.Text, (state) => $"j held: {state.Input.KeyHeld('j')}"),
         (Highlight.Text, (state) => $"j held: {state.Input.timers['j', 0]} {state.Input.timers['j', 1]}"),
+        (Highlight.Text, (state) => {
+            System.Collections.Generic.List<MouseEvent> events = state.Input.mEvents;
+            if (events.Count == 0)
+                return "";
+
+            MouseEvent e = events.First();
+            return $"{events.Count} {e.x}, {e.y}, p: {e.bstate & CursesMouseEvent.BUTTON1_PRESSED}, r: {e.bstate & CursesMouseEvent.BUTTON1_RELEASED}";
+        }),
     ];
 
     public DebugPopup() : base(Highlight.Text, 2, 2, WIDTH, segments.Length + 2) { }

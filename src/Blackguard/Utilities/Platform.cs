@@ -34,10 +34,10 @@ public abstract class Platform {
     public abstract List<string> ExtractNativeDependencies();
 
     public class Linux : Platform {
-        [DllImport("libc", SetLastError = true, CharSet = CharSet.Unicode)]
-        private static extern void setlocale(int category, string locale);
+        /* [DllImport("libc", SetLastError = true, CharSet = CharSet.Unicode)] */
+        /* private static extern void setlocale(int category, string locale); */
 
-        private const int LC_ALL = 6;
+        /* private const int LC_ALL = 6; */
 
         public override string CachePath() {
             string? xdg = Environment.GetEnvironmentVariable("XDG_CACHE_HOME");
@@ -49,7 +49,7 @@ public abstract class Platform {
         }
 
         public override void Configure() {
-            setlocale(LC_ALL, "");
+            /* setlocale(LC_ALL, ""); */
         }
 
         public override string DataPath() {

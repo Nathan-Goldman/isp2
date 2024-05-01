@@ -383,10 +383,15 @@ public class Game {
     public class InputHandler() {
         private readonly List<int> keys = new();
 
+        public readonly List<MouseEvent> mEvents = new();
+
         public readonly int[,] timers = new int[CursesKey.MAX, 2];
+
+        public int co = 0;
 
         public void PollInput(nint windowHandle) {
             keys.Clear();
+            mEvents.Clear();
 
             for (int i = 0; i < CursesKey.MAX; i++)
                 timers[i, 1]++;
@@ -394,9 +399,15 @@ public class Game {
             int c;
             try {
                 while ((c = NCurses.WindowGetChar(windowHandle)) != -1) {
-                    keys.Add(c);
-                    timers[c, 0] = timers[c, 1];
-                    timers[c, 1] = 0;
+                    if (c == CursesKey.MOUSE) {
+                        if (NCurses.GetMouse(out MouseEvent e) != -1)
+                            mEvents.Add(e);
+                    }
+                    else {
+                        keys.Add(c);
+                        timers[c, 0] = timers[c, 1];
+                        timers[c, 1] = 0;
+                    }
                 }
             }
             catch { } // Empty catch block because WindowGetChar throws if there is not a currently pressed key
