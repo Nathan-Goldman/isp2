@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="icon" type="image/png" href="./favicon.ico" />
+    <title>Blackguard Leaderboards</title>
+</head>
+
+<body>
+    <h1>Blackguard Public Leaderboards</h1>
+</body>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        function binSearch(arr, x) {
+            let start = 0, end = arr.length - 1;
+            let mid = 0;
+
+            while (start <= end) {
+                mid = Math.floor((start + end) / 2);
+
+                if (arr[mid].time === x.time) return mid;
+
+                else if (arr[mid].time < x.time)
+                    start = mid + 1;
+                else
+                    end = mid - 1;
+            }
+
+            return ~(mid);
+        }
+
+        async function inner() {
+            var frag = document.createDocumentFragment();
+            var temp = document.createElement("div");
+            temp.innerHTML += "<hr />";
+
+            var sortedScores = [];
+
+            const json = await fetch("./scoresjson")
+                .then(r => r.json())
+                .then(r => {
+                    var keys = Object.keys(r);
+                    for (var i = 0; i < keys.length; i++) {
+                        var key = keys[i];
+                        var obj = {time: r[key], uname: key};
+                        var idx = binSearch(sortedScores, obj);
+
+                        if (idx < 0)
+                            sortedScores.splice(~idx, 0, obj);
+                    }
+                })
+                .then(_ => {
+                    for (var i = 0; i < sortedScores.length; i++) {
+                        var obj = sortedScores[i];
+
+                        temp.innerHTML += `
+                            <div>
+                                <h2>${i + 1}: ${obj.uname} - ${obj.time} seconds </h2>
+                            </div>
+                        `;
+                    }
+                });
+
+            while (temp.firstChild) {
+                frag.appendChild(temp.firstChild);
+            }
+
+            document.body.appendChild(frag, document.body.childNodes[document.body.childNodes.length]);
+        }
+
+        inner();
+    })
+</script>

@@ -11,5 +11,8 @@ dotnet/
 scripts/run.bat
 scripts/build.bat
 
+*~
+node_modules/
+
 *.so
 *.o
