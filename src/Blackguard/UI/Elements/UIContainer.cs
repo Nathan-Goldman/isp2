@@ -38,33 +38,49 @@ public class UIContainer : UIElement, ISelectable {
 
         int w = 0, h = 0;
 
-        foreach (UIElement element in _elements) {
-            (int cw, int ch) = element.GetSize();
-            w = Math.Max(w, cw);
-            h += ch;
+        if (!Alignment.HasFlag(Alignment.Horizontal)) {
+            foreach (UIElement element in _elements) {
+                (int cw, int ch) = element.GetSize();
+                w = Math.Max(w, cw);
+                h += ch;
+            }
+
+            int hAdd = 0;
+            if (Border) {
+                w += 2;
+                hAdd = 2;
+            }
+
+            if (Height != null && h > Height)
+                return (w + 1, Height.Value + hAdd);
+
+            return (w, h + hAdd);
         }
+        else {
+            foreach (UIElement element in _elements) {
+                (int cw, int ch) = element.GetSize();
+                w += cw;
+                h = Math.Max(h, ch);
+            }
 
-        int hAdd = 0;
-        if (Border) {
-            w += 2;
-            hAdd = 2;
+            if (Border) {
+                w += 2;
+                h += 2;
+            }
+
+            return (w, h);
         }
-
-        if (Height != null && h > Height)
-            return (w + 1, Height.Value + hAdd);
-
-        return (w, h + hAdd);
     }
 
     public UIContainer(List<UIElement> elements, Alignment alignment) {
         _elements = elements;
-        _alignment = alignment;
+        Alignment = alignment;
         SelectFirstSelectable();
     }
 
     public UIContainer(Alignment alignment, params UIElement[] elements) {
         _elements = elements.ToList();
-        _alignment = alignment;
+        Alignment = alignment;
         SelectFirstSelectable();
     }
 
@@ -109,7 +125,8 @@ public class UIContainer : UIElement, ISelectable {
                     }
                 }
 
-                (_elements[selectedElement] as ISelectable)?.Deselect();
+                if (selectedElement < _elements.Count)
+                    (_elements[selectedElement] as ISelectable)?.Deselect();
                 selectedElement = i;
                 selectable.Select();
 
@@ -203,6 +220,7 @@ public class UIContainer : UIElement, ISelectable {
         return (h - _elements[^1].GetSize().h, h);
     }
 
+    // TODO: This desperately needs to be refactored
     public override void Render(Drawable drawable, int x, int y, int maxw, int maxh) {
         if (Empty())
             return;
@@ -211,15 +229,19 @@ public class UIContainer : UIElement, ISelectable {
         int cy = Border ? y + 1 : y; // child y position
 
         int tg = 0; // total gaps for fill
-        int th = 0;
-        int lw = 0;
+        int th = 0; // total height
+        int tw = 0; // total width
+        int lh = 0; // largest height
+        int lw = 0; // largest width
         for (int i = 0; i < _elements.Count; i++) {
-            if (_elements[i] is not UISpace && i != _elements.Count - 1)
+            if (_elements[i] is not UISpace && i != _elements.Count - 1 && _elements[i + 1] is not UISpace)
                 tg++;
 
             (int cw, int ch) = _elements[i].GetSize();
+            tw += cw;
             th += ch;
             lw = Math.Max(lw, cw);
+            lh = Math.Max(lh, ch);
         }
 
         bool scroll = Height != null && th > Height;
@@ -230,63 +252,92 @@ public class UIContainer : UIElement, ISelectable {
         if (Border)
             lw += 2;
 
-        int fillGapSize;
-        if (tg > 0) // Avoid dividing by zero
-            fillGapSize = (realMaxh - th) / tg;
-        else
-            fillGapSize = 0;
-
-        int j = 0; // Sum of heights looped through
-        for (int i = 0; i < _elements.Count; i++) {
-            UIElement child = _elements[i];
-            bool nextSpace = i < _elements.Count - 1 && _elements[i + 1] is UISpace;
-
-            int cx = 0; // child x
-            (int cw, int ch) = child.GetSize(); // child width, height
-
-            if (scroll)
-                cw += 1;
-
-            if (Border)
-                cw += 2;
-
-            j += ch;
-            if (j <= hOffset)
-                continue;
-
-            if (_alignment.HasFlag(Alignment.Center))
-                cx += (maxw - cw) / 2;
-            else if (_alignment.HasFlag(Alignment.Right))
-                cx += maxw - cw;
-
-            if (_alignment.HasFlag(Alignment.Bottom)) {
-                cy = realMaxh - th;
-                th -= ch;
-            }
-
-            if (cy + ch > y + realMaxh + (Border ? 1 : 0))
-                break;
-
-            child.Render(drawable, Border ? cx + 1 : cx, cy, maxw, realMaxh - cy);
-
-            cy += ch;
-
-            // This works, but the gap size may not fill *all* the way if the terminal isn't in perfect increments
-            if (_alignment.HasFlag(Alignment.Fill) && !(nextSpace || child is UISpace))
-                cy += fillGapSize;
+        int vFillGapSize;
+        int hFillGapSize;
+        if (tg > 0) { // Avoid dividing by zero
+            hFillGapSize = (maxw - tw) / tg;
+            vFillGapSize = (realMaxh - th) / tg;
+        }
+        else {
+            hFillGapSize = 0;
+            vFillGapSize = 0;
         }
 
-        // Render scrollbar
-        if (Height != null && scroll) {
-            int size = (int)Math.Round(Height.Value / (double)th * Height.Value);
+        if (!Alignment.HasFlag(Alignment.Horizontal)) {
+            int j = 0; // Sum of heights looped through
+            for (int i = 0; i < _elements.Count; i++) {
+                UIElement child = _elements[i];
+                bool nextSpace = i < _elements.Count - 1 && _elements[i + 1] is UISpace;
 
-            int starty = (int)Math.Round(hOffset / (double)th * Height.Value);
+                int cx = 0; // child x
+                (int cw, int ch) = child.GetSize(); // child width, height
 
-            for (int i = 0; i < Height + 1; i++) {
-                if (i < starty || i > starty + size)
-                    drawable.AddLinesWithHighlight((ScrollUnsel, x + lw - (Border ? 2 : 1), i + y, " "));
-                else
-                    drawable.AddLinesWithHighlight((Selected ? ScrollSel : ScrollUnsel, x + lw - (Border ? 2 : 1), i + y, "b"));
+                if (scroll)
+                    cw += 1;
+
+                if (Border)
+                    cw += 2;
+
+                j += ch;
+                if (j <= hOffset)
+                    continue;
+
+                if (!child.Alignment.HasFlag(Alignment.Fill)) {
+                    if (Alignment.HasFlag(Alignment.Center))
+                        cx += (maxw - cw) / 2;
+                    else if (Alignment.HasFlag(Alignment.Right))
+                        cx += maxw - cw;
+
+                    if (Alignment.HasFlag(Alignment.Bottom)) {
+                        cy = realMaxh - th;
+                        th -= ch;
+                    }
+                }
+
+                if (cy + ch > y + realMaxh + (Border ? 1 : 0))
+                    break;
+
+                child.Render(drawable, Border ? cx + 1 : cx, cy, maxw, realMaxh - cy);
+
+                cy += ch;
+
+                // This works, but the gap size may not fill *all* the way if the terminal isn't in perfect increments
+                if (Alignment.HasFlag(Alignment.Fill) && !(nextSpace || child is UISpace))
+                    cy += vFillGapSize;
+            }
+
+            // Render scrollbar
+            if (Height != null && scroll) {
+                int size = (int)Math.Round(Height.Value / (double)th * Height.Value);
+
+                int starty = (int)Math.Round(hOffset / (double)th * Height.Value);
+
+                for (int i = 0; i < Height + 1; i++) {
+                    if (i < starty || i > starty + size)
+                        drawable.AddLinesWithHighlight((ScrollUnsel, x + lw - (Border ? 2 : 1), i + y, " "));
+                    else
+                        drawable.AddLinesWithHighlight((Selected ? ScrollSel : ScrollUnsel, x + lw - (Border ? 2 : 1), i + y, "b"));
+                }
+            }
+        }
+        // TODO: This could maybe be combined with the above code.
+        else { // Horizontal
+            int cx = Border ? x + 1 : x;
+
+            // TODO: Handle borders, handle drawing anything other than fill
+
+            for (int i = 0; i < _elements.Count; i++) {
+                UIElement child = _elements[i];
+                bool nextSpace = i < _elements.Count - 1 && _elements[i + 1] is UISpace;
+
+                (int cw, int _) = child.GetSize();
+
+                child.Render(drawable, cx, cy, maxw, maxh);
+
+                cx += cw;
+
+                if (Alignment.HasFlag(Alignment.Fill) && !(nextSpace || child is UISpace))
+                    cx += hFillGapSize;
             }
         }
 

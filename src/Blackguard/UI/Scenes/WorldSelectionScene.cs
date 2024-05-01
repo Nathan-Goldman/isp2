@@ -75,20 +75,20 @@ public class WorldSelectionScene : Scene {
     public override void ProcessInput(Game state) {
         base.ProcessInput(state);
 
-        if (state.Input.KeyPressed(CursesKey.DELETEKEY) && container.GetSelectedElement() is UIContainer) {
+        if (state.Input.KeyHit(CursesKey.DELETEKEY) && container.GetSelectedElement() is UIContainer) {
             UIWorld w = (UIWorld)worldList.GetSelectedElement();
             state.OpenPopup(
                 new ConfirmationPopup(
-                    "DeletePlayerConfirmation",
                     [$"Are you sure you want to delete the player {w.World.Name}"],
                     null,
-                    (_) => {
+                    (s) => {
                         w.World.Delete();
                         worldList.Remove(w);
 
                         if (!worldList.SelectFirstSelectable())
                             container.SelectFirstSelectable();
 
+                        s.CurrentPanel.Clear();
                     }
             ),
                 true);

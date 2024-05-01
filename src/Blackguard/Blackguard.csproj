@@ -66,6 +66,14 @@
     </Exec>
   </Target>
 
+  <!-- Rebuild Curses Initializer -->
+  <Target Name="CompileCursesInit" BeforeTargets="AfterBuild">
+    <Message Text="Compiling CursesInit" Importance="High" />
+    <Exec Command="gcc -c -Wall -Werror -fpic init.c" WorkingDirectory="../CursesInit/" />
+    <Exec Command="gcc -shared -o cursesinit.so -L /lib -lcurses init.o" WorkingDirectory="../CursesInit/" />
+    <Exec Command="cp ./cursesinit.so ../Blackguard/bin/Debug/net8.0/" WorkingDirectory="../CursesInit/" />
+  </Target>
+
   <!-- Define GitCheckTask, to only recompile PDCurses upon a new commit -->
   <UsingTask TaskName="GitCheckTask" AssemblyFile="../Blackguard.Build/bin/Debug/net8.0/Blackguard.Build.dll" />
 

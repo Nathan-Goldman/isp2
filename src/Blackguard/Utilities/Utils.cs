@@ -55,7 +55,7 @@ public static class Utils {
     /// Returns the NOT BOUNDS CHECKED position relative to the top left of the screen
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 ToScreenPos(Vector2 topLeft, Vector2 pos) {
+    public static Point ToScreenPos(Point topLeft, Point pos) {
         return pos - topLeft;
     }
 
@@ -123,10 +123,38 @@ public static class Utils {
         ];
     }
 
-    public static string[] Wrap(this string str, int lines) {
-        throw new NotImplementedException();
-        /* string[] ret = new string[lines]; */
+    public static string Pad(this string s, int w) {
+        if (s.Length == 0)
+            return s;
 
-        /* string[] split = str.Split(' '); */
+        if (s.Length > w)
+            return s[..w];
+
+        return s + new string(' ', w - s.Length);
     }
+
+    // If positive, then the two rectangles intersect
+    public static float Intersect(float x1f, float y1f, int w1, int h1, float x2f, float y2f, int w2, int h2) {
+        int x1 = (int)x1f;
+        int y1 = (int)y1f;
+        int x2 = (int)x2f;
+        int y2 = (int)y2f;
+
+        return Math.Max(0f, Math.Min(x1 + w1, x2 + w2) - Math.Max(x1, x2))
+            * Math.Max(0f, Math.Min(y1 + h1, y2 + h2) - Math.Max(y1, y2));
+    }
+
+    public static Point ToChunkPosition(this Point p) => new((int)Math.Floor((float)p.X / Chunk.CHUNKSIZE), (int)Math.Floor((float)p.Y / Chunk.CHUNKSIZE));
+
+    public static Point ToChunkPosition(this Vector2 v) => new((int)Math.Floor(v.X / Chunk.CHUNKSIZE), (int)Math.Floor(v.Y / Chunk.CHUNKSIZE));
+
+    public static Point ToWorldPosition(this Point p) => p * Chunk.CHUNKSIZE;
+
+    public static Vector2 Normalize(this Vector2 v) {
+        float len = v.Length();
+
+        return new(v.X / len, v.Y / len);
+    }
+
+    public static Vector2 DirectionTo(this Vector2 from, Vector2 to) => to - from;
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Blackguard.UI.Elements;
 using Blackguard.Utilities;
@@ -15,7 +16,7 @@ public class InfoPopup : Popup {
     private readonly UIContainer container;
     private readonly Highlight highlight;
 
-    public InfoPopup(string name, InfoType type, string[] contents) : base(name, Highlight.Text, contents.Max(s => s.Length) + 2, contents.Length + 4) {
+    public InfoPopup(InfoType type, string[] contents, Action<Game>? callback = null) : base(Highlight.Text, contents.Max(s => s.Length) + 2, contents.Length + 4) {
         highlight = type switch {
             InfoType.Info => Highlight.Text,
             InfoType.Warning => Highlight.TextWarning,
@@ -29,9 +30,12 @@ public class InfoPopup : Popup {
             BorderUnsel = highlight,
         };
 
-        container.Add(new UIText(contents) { Highlight = highlight });
+        container.Add(new UIText(contents, Alignment.Center) { Highlight = highlight });
         container.Add(new UISpace(0, 1));
-        container.Add(new UIButton(["Ok"], (s) => { s.ClosePopup(this); }));
+        container.Add(new UIButton(["Ok"], (s) => {
+            callback?.Invoke(s);
+            s.ClosePopup(this);
+        }));
 
         container.Select();
         container.SelectFirstSelectable();
@@ -44,14 +48,16 @@ public class InfoPopup : Popup {
     }
 
     public override bool RunTick(Game state) {
-        if (state.Input.KeyPressed(CursesKey.DOWN))
+        if (!Focused)
+            return true;
+
+        if (state.Input.KeyHit(CursesKey.DOWN))
             container.Next(true);
 
-        if (state.Input.KeyPressed(CursesKey.UP))
+        if (state.Input.KeyHit(CursesKey.UP))
             container.Prev(true);
 
-        if (Focused)
-            container.ProcessInput(state);
+        container.ProcessInput(state);
 
         return true;
     }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using Blackguard.UI;
 using Blackguard.UI.Popups;
 using Blackguard.UI.Scenes;
@@ -21,7 +20,7 @@ public class Game {
     public World World { get; set; } = null!;
 
     public Panel CurrentPanel; // Shared panel used by the current scene
-    public Vector2 ViewOrigin;
+    public Point ViewOrigin;
     public bool inGame = false;
     public bool drawChunkOutline = false;
 
@@ -31,6 +30,7 @@ public class Game {
     private bool nextQueued = false;
     private bool backQueued = false;
     private readonly List<Popup> popups = new();
+    private readonly Stack<Popup> focusStack = new();
     private readonly List<(Popup, bool)> pendingOpen = new();
 
     public InputHandler Input { private set; get; }
@@ -38,8 +38,11 @@ public class Game {
     private (int, int) oldSize = (0, 0);
     public uint ticks = 0;
 
+    public static Random Rand { get; set; }
+
     private Stopwatch gameTimer = null!;
     public TimeSpan totalElapsedTime = TimeSpan.Zero;
+    public DateTime Start;
     private TimeSpan accumulatedElapsedTime;
     private long previousTicks = 0;
     private readonly TimeSpan targetElapsedTime = TimeSpan.FromTicks(166667); // 60 fps. 1000/60 ms
@@ -50,12 +53,17 @@ public class Game {
     private TimeSpan worstCaseSleepPrecision = TimeSpan.FromMilliseconds(1);
     private static readonly TimeSpan maxElapsedTime = TimeSpan.FromMilliseconds(500);
 
+    static Game() {
+        Rand = new(Environment.TickCount);
+    }
+
     public Game() {
         InitializeDirectories();
         Input = new InputHandler();
-        CurrentPanel = Panel.NewFullScreenPanel("Base Panel", Highlight.Text);
+        CurrentPanel = Panel.NewFullScreenPanel(Highlight.Text);
         scenes.Add(new MainMenuScene());
         oldSize = (NCurses.Lines, NCurses.Columns);
+        Start = DateTime.Now;
     }
 
     public static void InitializeDirectories() {
@@ -156,7 +164,7 @@ public class Game {
 
     // Handles input independent of any scenes (for things like the debug popup, etc).
     private void MainInputHandler() {
-        if (Input.KeyPressed(CursesKey.KEY_F(6))) {
+        if (Input.KeyHit(CursesKey.KEY_F(6))) {
             if (IsPopupOpenByType<DebugPopup>()) {
                 ClosePopupsByType<DebugPopup>();
                 drawChunkOutline = false;
@@ -282,6 +290,8 @@ public class Game {
         else
             return;
 
+        scenes[sceneIdx].Close(this);
+        scenes[changeIdx].Initialize(this);
         sceneIdx = changeIdx;
         CurrentPanel.Clear();
     }
@@ -299,8 +309,16 @@ public class Game {
 
         NCurses.UpdatePanels();
 
-        if (popup.Focused)
-            CurrentScene.Focused = true;
+        if (popup.Focused) {
+            if (focusStack.Count > 0) {
+                focusStack.Pop();
+
+                if (focusStack.Count > 0)
+                    focusStack.Peek().Focused = true;
+                else
+                    CurrentScene.Focused = true;
+            }
+        }
     }
 
     public void ClosePopupsByType<T>() where T : Popup {
@@ -339,8 +357,13 @@ public class Game {
                 NCurses.TopPanel(popup.Panel.Handle);
 
                 if (focus) {
+                    if (focusStack.Count > 0)
+                        focusStack.Peek().Focused = false;
+                    else
+                        CurrentScene.Focused = false;
+
                     popup.Focused = true;
-                    CurrentScene.Focused = false;
+                    focusStack.Push(popup);
                 }
             }
 
@@ -348,16 +371,44 @@ public class Game {
         }
     }
 
+    public void Save(bool alert = false) {
+        Player?.Serialize();
+
+        World?.Serialize();
+
+        if (alert)
+            OpenPopup(new InfoPopup(InfoType.Info, ["Saved successfully!"]), true);
+    }
+
     public class InputHandler() {
         private readonly List<int> keys = new();
 
+        public readonly List<MouseEvent> mEvents = new();
+
+        public readonly int[,] timers = new int[CursesKey.MAX, 2];
+
+        public int co = 0;
+
         public void PollInput(nint windowHandle) {
             keys.Clear();
+            mEvents.Clear();
+
+            for (int i = 0; i < CursesKey.MAX; i++)
+                timers[i, 1]++;
 
             int c;
             try {
-                while ((c = NCurses.WindowGetChar(windowHandle)) != -1)
-                    keys.Add(c);
+                while ((c = NCurses.WindowGetChar(windowHandle)) != -1) {
+                    if (c == CursesKey.MOUSE) {
+                        if (NCurses.GetMouse(out MouseEvent e) != -1)
+                            mEvents.Add(e);
+                    }
+                    else {
+                        keys.Add(c);
+                        timers[c, 0] = timers[c, 1];
+                        timers[c, 1] = 0;
+                    }
+                }
             }
             catch { } // Empty catch block because WindowGetChar throws if there is not a currently pressed key
         }
@@ -368,7 +419,9 @@ public class Game {
 
         public bool HasInputThisTick() => keys.Count > 0;
 
-        public bool KeyPressed(int keyCode) => keys.Contains(keyCode);
+        public bool KeyHit(int keyCode) => keys.Contains(keyCode);
+
+        public bool KeyHeld(int keyCode) => timers[keyCode, 0] < 4 && timers[keyCode, 1] < 3;
 
         public bool IsEnterPressed() => keys.Contains(CursesKey.ENTER) || keys.Contains(10) || keys.Contains(13);
     }

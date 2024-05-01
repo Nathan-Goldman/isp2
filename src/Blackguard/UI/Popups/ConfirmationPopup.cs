@@ -12,7 +12,7 @@ public class ConfirmationPopup : Popup {
     public Highlight TextHighlight = Highlight.Text;
     public Highlight Border = Highlight.Text;
 
-    public ConfirmationPopup(string name, string[] contents, Action<Game>? cancel, Action<Game>? ok) : base(name, Highlight.Text, contents.Max(s => s.Length) + 2, contents.Length + 5) {
+    public ConfirmationPopup(string[] contents, Action<Game>? cancel, Action<Game>? ok) : base(Highlight.Text, contents.Max(s => s.Length) + 2, contents.Length + 5) {
         container = new(Alignment.Center) {
             Border = true,
             BorderSel = Border,
@@ -21,15 +21,19 @@ public class ConfirmationPopup : Popup {
 
         container.Add(new UIText(contents) { Highlight = TextHighlight });
         container.Add(new UISpace(0, 1));
-        // TODO: Allow buttons to be in a subcontainer and then aligned horizontally
-        container.Add(new UIButton(["Cancel"], (s) => {
-            cancel?.Invoke(s);
-            s.ClosePopup(this);
-        }));
-        container.Add(new UIButton(["Ok"], (s) => {
-            ok?.Invoke(s);
-            s.ClosePopup(this);
-        }));
+        container.Add(new UIContainer(
+            Alignment.Horizontal | Alignment.Fill,
+            new UISpace(4, 0),
+            new UIButton(["Cancel"], (s) => {
+                cancel?.Invoke(s);
+                s.ClosePopup(this);
+            }),
+            new UIButton(["Ok"], (s) => {
+                ok?.Invoke(s);
+                s.ClosePopup(this);
+            }),
+            new UISpace(4, 0)
+        ));
 
         container.Select();
         container.SelectFirstSelectable();
@@ -42,14 +46,16 @@ public class ConfirmationPopup : Popup {
     }
 
     public override bool RunTick(Game state) {
-        if (state.Input.KeyPressed(CursesKey.DOWN))
-            container.Next(true);
+        if (!Focused)
+            return true;
 
-        if (state.Input.KeyPressed(CursesKey.UP))
+        if (state.Input.KeyHit(CursesKey.LEFT))
             container.Prev(true);
 
-        if (Focused)
-            container.ProcessInput(state);
+        if (state.Input.KeyHit(CursesKey.RIGHT))
+            container.Next(true);
+
+        container.ProcessInput(state);
 
         return true;
     }

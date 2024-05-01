@@ -1,15 +1,15 @@
 namespace Blackguard.UI.Elements;
 
 public abstract class UIElement : ISizeProvider {
-    protected Alignment _alignment;
+    public Alignment Alignment { protected set; get; }
 
     public void ChangeAlignment(Alignment alignment, bool replace = false) {
         if (replace)
-            _alignment = alignment;
+            Alignment = alignment;
         else {
-            Alignment temp = _alignment;
+            Alignment temp = Alignment;
             temp.UpdateAlignment(alignment);
-            _alignment = temp;
+            Alignment = temp;
         }
     }
 

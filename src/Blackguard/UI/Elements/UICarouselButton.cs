@@ -37,7 +37,7 @@ public class UICarouselButton<T> : UIElement, ISelectable {
             _enterCallback?.Invoke(state, _options[idx].Item2);
         }
 
-        if (state.Input.KeyPressed(CursesKey.LEFT)) {
+        if (state.Input.KeyHit(CursesKey.LEFT)) {
             if (idx > 0)
                 idx--;
             else
@@ -48,7 +48,7 @@ public class UICarouselButton<T> : UIElement, ISelectable {
             clear = true;
         }
 
-        if (state.Input.KeyPressed(CursesKey.RIGHT)) {
+        if (state.Input.KeyHit(CursesKey.RIGHT)) {
             if (idx < _options.Count - 1)
                 idx++;
             else

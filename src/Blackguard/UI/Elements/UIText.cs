@@ -9,7 +9,7 @@ public class UIText : UIElement {
     public Highlight Highlight;
 
     public UIText(string[] lines, Alignment alignment = Alignment.Left) {
-        _alignment = alignment;
+        Alignment = alignment;
         Lines = lines;
     }
 

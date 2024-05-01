@@ -6,6 +6,6 @@ public class Dirt : TileDefinition {
     public Dirt() {
         Name = "Dirt";
         Glyph = '#';
-        Highlight = Highlight.Dirt;
+        Highlight = Highlight.Wood;
     }
 }

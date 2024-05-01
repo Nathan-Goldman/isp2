@@ -21,12 +21,12 @@ public class WorldCreationScene : Scene {
             string storedText = _nameInput.GetStoredText();
 
             if (storedText.Length == 0) {
-                state.OpenPopup(new InfoPopup("NameTooShortWarning", InfoType.Warning, ["A name must be choosen to continue!"]), true);
+                state.OpenPopup(new InfoPopup(InfoType.Warning, ["A name must be choosen to continue!"]), true);
                 return;
             }
 
             if (Directory.Exists(Path.Combine(Game.WorldsPath, storedText))) {
-                state.OpenPopup(new InfoPopup("WorldExistsWarning", InfoType.Warning, [$"A world with the name {storedText} already exists!"]), true);
+                state.OpenPopup(new InfoPopup(InfoType.Warning, [$"A world with the name {storedText} already exists!"]), true);
                 return;
             }
 

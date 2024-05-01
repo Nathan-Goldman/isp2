@@ -1,6 +1,6 @@
 using System;
-using System.Numerics;
 using Blackguard.Tiles;
+using Blackguard.Utilities;
 
 namespace Blackguard;
 
@@ -11,7 +11,7 @@ public class WorldGen {
         rand = new(seed);
     }
 
-    public Chunk GenChunk(string basePath, Vector2 position) {
+    public Chunk GenChunk(Point position) {
         Chunk ret = new(position);
 
         // TODO: Actual noise-based worldgen
@@ -31,7 +31,6 @@ public class WorldGen {
             ret.Tiles[cx, cy] = new Tile(Registry.GetDefinition<Stone>(), true);
         }
 
-        ret.Serialize(basePath);
         return ret;
     }
 }

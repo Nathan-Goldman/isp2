@@ -74,19 +74,20 @@ public class PlayerSelectionScene : Scene {
     public override void ProcessInput(Game state) {
         base.ProcessInput(state);
 
-        if (state.Input.KeyPressed(CursesKey.DELETEKEY) && container.GetSelectedElement() is UIContainer) {
+        if (state.Input.KeyHit(CursesKey.DELETEKEY) && container.GetSelectedElement() is UIContainer) {
             UIPlayer p = (UIPlayer)playerList.GetSelectedElement();
             state.OpenPopup(
                 new ConfirmationPopup(
-                    "DeletePlayerConfirmation",
                     [$"Are you sure you want to delete the player {p.Player.Name}"],
                     null,
-                    (_) => {
+                    (s) => {
                         p.Player.Delete();
                         playerList.Remove(p);
 
                         if (!playerList.SelectFirstSelectable())
                             container.SelectFirstSelectable();
+
+                        s.CurrentPanel.Clear();
                     }
             ),
                 true);

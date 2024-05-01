@@ -10,7 +10,7 @@ public static class Registry {
         public int Id => SumString(Name);
     }
 
-    private class RegistryForType() {
+    public class RegistryForType() {
         internal Dictionary<Type, Definition> defsByType = new();
         internal Dictionary<int, Definition> defsById = new();
     }
@@ -54,8 +54,13 @@ public static class Registry {
     }
 
     // Given a derived definition (Dirt, Grass, ...) get the appropriate id
-    public static int GetId<T>() {
+    public static int GetId<T>() where T : Definition {
         Type t = typeof(T);
-        return registriesByDefinitionType[t].defsByType[t].Id;
+        return registriesByDefinitionType[t.BaseType].defsByType[t].Id;
+    }
+
+    // Given a definition type, return the entire registry
+    public static RegistryForType GetRegistry<T>() where T : Definition {
+        return registriesByDefinitionType[typeof(T)];
     }
 }
